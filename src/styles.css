@@ -280,7 +280,7 @@ h3 {
   border-radius: 1.25rem;
   display: grid;
   gap: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 1.5rem 0;
   padding: 1rem;
 }
