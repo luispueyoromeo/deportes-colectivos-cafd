@@ -3,7 +3,7 @@ import { contentBlocks, formats, resources, sports } from './data.js';
 const academicYears = [...new Set(resources.map((resource) => resource.academicYear))].sort();
 const blockFilterOptions = [
   ...contentBlocks,
-  ...[...new Set(resources.map((resource) => resource.block))].filter((block) => !contentBlocks.includes(block)),
+  ...[...new Set(resources.map(resourceBlock))].filter((block) => !contentBlocks.includes(block)),
 ];
 
 const app = document.querySelector('#app');
@@ -18,8 +18,24 @@ const navItems = [
   { id: 'calidad', label: 'Guía de calidad' },
 ];
 
-function sportName(slug) {
-  return sports.find((sport) => sport.slug === slug)?.name ?? slug;
+function sportName(value) {
+  return sports.find((sport) => sport.slug === value || sport.name === value)?.name ?? value;
+}
+
+function resourceSportSlug(resource) {
+  return sports.find((sport) => sport.slug === resource.sport || sport.name === resource.sport)?.slug ?? resource.sport;
+}
+
+function resourceBlock(resource) {
+  return resource.block ?? resource.category;
+}
+
+function resourceAuthors(resource) {
+  return resource.authorship ?? resource.authors;
+}
+
+function resourceUrl(resource) {
+  return resource.driveUrl ?? resource.url;
 }
 
 function setRoute(route) {
@@ -92,8 +108,8 @@ function renderHome() {
 
 function renderRepository() {
   const filteredResources = resources.filter((resource) => {
-    const bySport = filters.sport === 'Todos' || resource.sport === filters.sport;
-    const byBlock = filters.block === 'Todos' || resource.block === filters.block;
+    const bySport = filters.sport === 'Todos' || resourceSportSlug(resource) === filters.sport;
+    const byBlock = filters.block === 'Todos' || resourceBlock(resource) === filters.block;
     const byFormat = filters.format === 'Todos' || resource.format === filters.format;
     const byAcademicYear = filters.academicYear === 'Todos' || resource.academicYear === filters.academicYear;
     return bySport && byBlock && byFormat && byAcademicYear;
@@ -140,13 +156,13 @@ function selectFilter(label, key, options, display) {
 
 function renderSportPage(sport) {
   const sportResources = resources.filter((resource) => {
-    const bySport = resource.sport === sport.slug;
+    const bySport = resourceSportSlug(resource) === sport.slug;
     const byAcademicYear = filters.academicYear === 'Todos' || resource.academicYear === filters.academicYear;
     return bySport && byAcademicYear;
   });
   const sportBlocks = [
     ...contentBlocks,
-    ...[...new Set(sportResources.map((resource) => resource.block))].filter((block) => !contentBlocks.includes(block)),
+    ...[...new Set(sportResources.map(resourceBlock))].filter((block) => !contentBlocks.includes(block)),
   ];
 
   return `
@@ -164,7 +180,7 @@ function renderSportPage(sport) {
       <div class="block-stack">
         ${sportBlocks
           .map((block) => {
-            const blockResources = sportResources.filter((resource) => resource.block === block);
+            const blockResources = sportResources.filter((resource) => resourceBlock(resource) === block);
             return `
               <section class="content-block">
                 <div class="block-heading">
@@ -199,12 +215,12 @@ function resourceGrid(items, emptyText) {
               <h3>${resource.title}</h3>
               <p>${resource.description}</p>
               <dl>
-                <div><dt>Bloque</dt><dd>${resource.block}</dd></div>
-                <div><dt>Autoría</dt><dd>${resource.authorship}</dd></div>
+                <div><dt>Bloque</dt><dd>${resourceBlock(resource)}</dd></div>
+                <div><dt>Autoría</dt><dd>${resourceAuthors(resource)}</dd></div>
                 <div><dt>Curso</dt><dd>${resource.academicYear}</dd></div>
               </dl>
               ${resource.isEditableExample ? '<span class="editable-badge">Ejemplo editable</span>' : ''}
-              <a class="drive-link" href="${resource.driveUrl}" target="_blank" rel="noreferrer">Abrir en Google Drive</a>
+              <a class="drive-link" href="${resourceUrl(resource)}" target="_blank" rel="noreferrer">Abrir en Google Drive</a>
             </article>
           `,
         )

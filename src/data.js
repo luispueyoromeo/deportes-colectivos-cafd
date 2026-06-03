@@ -30,26 +30,26 @@ export const formats = ['Presentación', 'Vídeo', 'Documento', 'Infografía', '
 
 // Recursos editables por el profesor. Para incorporar nuevos materiales:
 // 1. Duplica un objeto del listado.
-// 2. Cambia id, title, sport, block, authorship, academicYear, format y description.
-// 3. Sustituye driveUrl por el enlace revisado de Google Drive.
+// 2. Cambia id, title, sport, category, authors, academicYear, format y description.
+// 3. Sustituye url por el enlace revisado de Google Drive.
 //
 // Valores recomendados:
-// - sport: usa uno de los slugs definidos arriba: voleibol, baloncesto, balonmano o futbol.
-// - block: usa Fundamentos técnicos, Fundamentos tácticos, Reglamento o Todos los bloques
-//   para carpetas generales que agrupen varios tipos de contenidos.
+// - sport: usa el nombre del deporte, por ejemplo Fútbol, o el slug definido arriba, por ejemplo futbol.
+// - category: usa Fundamentos técnicos, Fundamentos tácticos, Reglamento o Repositorio general.
 // - academicYear: escribe el curso con formato 2025/2026. El filtro de cursos se genera automáticamente.
+// - url: pega aquí el enlace editable de Google Drive.
 export const resources = [
   {
     id: 'futbol-2025-2026-repositorio-general',
     title: 'Materiales de aula invertida de fútbol',
-    sport: 'futbol',
-    block: 'Todos los bloques',
-    authorship: 'Alumnado de Deportes Colectivos',
+    sport: 'Fútbol',
+    category: 'Repositorio general',
+    authors: 'Alumnado de Deportes Colectivos',
     academicYear: '2025/2026',
     format: 'Carpeta de Google Drive',
     description:
       'Carpeta con materiales elaborados por el alumnado sobre reglamento, fundamentos técnicos y fundamentos tácticos de fútbol durante el curso académico 2025/2026.',
-    driveUrl: 'https://drive.google.com/drive/folders/ENLACE_EDITABLE',
+    url: 'https://drive.google.com/drive/folders/ENLACE_EDITABLE',
     isEditableExample: true,
   },
   {
