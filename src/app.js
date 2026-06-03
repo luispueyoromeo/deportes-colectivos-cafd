@@ -2,7 +2,7 @@ import { contentBlocks, formats, resources, sports } from './data.js';
 
 const app = document.querySelector('#app');
 const nav = document.querySelector('#main-nav');
-let filters = { sport: 'Todos', block: 'Todos', format: 'Todos' };
+let filters = { sport: 'Todos', block: 'Todos', format: 'Todos', academicYear: 'Todos' };
 
 const navItems = [
   { id: 'inicio', label: 'Inicio' },
@@ -14,6 +14,10 @@ const navItems = [
 
 function sportName(slug) {
   return sports.find((sport) => sport.slug === slug)?.name ?? slug;
+}
+
+function academicYearsFrom(items) {
+  return [...new Set(items.map((resource) => resource.academicYear))].sort().reverse();
 }
 
 function setRoute(route) {
@@ -89,7 +93,9 @@ function renderRepository() {
     const bySport = filters.sport === 'Todos' || resource.sport === filters.sport;
     const byBlock = filters.block === 'Todos' || resource.block === filters.block;
     const byFormat = filters.format === 'Todos' || resource.format === filters.format;
-    return bySport && byBlock && byFormat;
+    const byAcademicYear =
+      filters.academicYear === 'Todos' || resource.academicYear === filters.academicYear;
+    return bySport && byBlock && byFormat && byAcademicYear;
   });
 
   return `
@@ -97,7 +103,7 @@ function renderRepository() {
       ${pageIntro(
         'Repositorio general',
         'Consulta todos los materiales disponibles',
-        'Filtra los recursos por deporte, bloque de contenido y formato. Los ejemplos incluidos son ficticios y editables para facilitar la actualización manual de enlaces a Google Drive.',
+        'Filtra los recursos por deporte, bloque de contenido, formato y curso académico. Los ejemplos incluidos son ficticios y editables para facilitar la actualización manual de enlaces a Google Drive.',
       )}
       <div class="filters" aria-label="Filtros del repositorio">
         ${selectFilter('Deporte', 'sport', ['Todos', ...sports.map((sport) => sport.slug)], (value) =>
@@ -105,6 +111,7 @@ function renderRepository() {
         )}
         ${selectFilter('Bloque', 'block', ['Todos', ...contentBlocks], (value) => value)}
         ${selectFilter('Formato', 'format', ['Todos', ...formats], (value) => value)}
+        ${selectFilter('Curso académico', 'academicYear', ['Todos', ...academicYearsFrom(resources)], (value) => value)}
       </div>
       ${resourceGrid(filteredResources, 'No hay recursos con los filtros seleccionados.')}
     </section>
@@ -130,6 +137,9 @@ function selectFilter(label, key, options, display) {
 
 function renderSportPage(sport) {
   const sportResources = resources.filter((resource) => resource.sport === sport.slug);
+  const filteredSportResources = sportResources.filter(
+    (resource) => filters.academicYear === 'Todos' || resource.academicYear === filters.academicYear,
+  );
 
   return `
     <section class="page-section">
@@ -138,10 +148,18 @@ function renderSportPage(sport) {
         `${sport.emoji} ${sport.name}`,
         `${sport.summary} Cada bloque muestra las tarjetas correspondientes a los recursos revisados e incorporados manualmente al repositorio.`,
       )}
+      <div class="filters" aria-label="Filtros de ${sport.name}">
+        ${selectFilter(
+          'Curso académico',
+          'academicYear',
+          ['Todos', ...academicYearsFrom(sportResources)],
+          (value) => value,
+        )}
+      </div>
       <div class="block-stack">
         ${contentBlocks
           .map((block) => {
-            const blockResources = sportResources.filter((resource) => resource.block === block);
+            const blockResources = filteredSportResources.filter((resource) => resource.block === block);
             return `
               <section class="content-block">
                 <div class="block-heading">

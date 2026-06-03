@@ -109,4 +109,17 @@ export const resources = [
     driveUrl: 'https://drive.google.com/drive/folders/EDITABLE-FUTBOL-TECNICA',
     isEditableExample: true,
   },
+  {
+    id: 7,
+    title: 'Ejemplo editable de fútbol 2025/2026',
+    sport: 'futbol',
+    block: 'Fundamentos tácticos',
+    authorship: 'Grupo de ejemplo',
+    academicYear: '2025/2026',
+    format: 'Otro',
+    description:
+      'Recurso de ejemplo para incorporar materiales de fútbol del curso 2025/2026 con enlace editable a Google Drive.',
+    driveUrl: 'https://drive.google.com/drive/folders/ENLACE_EDITABLE',
+    isEditableExample: true,
+  },
 ];
