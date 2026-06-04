@@ -120,6 +120,6 @@ export const resources = [
     description:
       'Recurso de ejemplo para incorporar materiales de fútbol del curso 2025/2026 con enlace editable a Google Drive.',
     driveUrl: 'https://drive.google.com/drive/folders/14aAuq44JZy3frJUQFtAT9u8b5NW3FKmZ?usp=sharing',
-    isEditableExample: true,
+    isEditableExample: false,
   },
 ];
