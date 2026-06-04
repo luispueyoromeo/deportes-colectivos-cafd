@@ -4,23 +4,17 @@ const app = document.querySelector('#app');
 const nav = document.querySelector('#main-nav');
 let filters = { sport: 'Todos', block: 'Todos', academicYear: 'Todos' };
 
-const initialSessionTasks = [
-  'Activación o calentamiento',
-  'Tarea 1',
-  'Tarea 2',
-  'Tarea 3',
-  'Vuelta a la calma o cierre reflexivo',
-];
+const initialMainTaskLabels = ['Tarea 1', 'Tarea 2', 'Tarea 3'];
 
 let sessionDesignerState = createEmptySessionState();
 
 const navItems = [
   { id: 'inicio', label: 'Inicio' },
   { id: 'repositorio', label: 'Repositorio' },
-  { id: 'diseno-sesion', label: 'Diseño de sesión' },
   { id: 'uso-repositorio', label: 'Uso del repositorio' },
   { id: 'guia-trabajo', label: 'Guía del trabajo' },
   { id: 'uso-ia', label: 'Uso responsable de IA' },
+  { id: 'diseno-sesion', label: 'Diseño de sesión' },
 ];
 
 function sportName(slug) {
@@ -32,7 +26,7 @@ function academicYearsFrom(items) {
 }
 
 
-function createEmptySessionState(taskLabels = initialSessionTasks) {
+function createEmptySessionState(mainTaskLabels = initialMainTaskLabels) {
   return {
     general: {
       sport: 'Voleibol',
@@ -48,7 +42,9 @@ function createEmptySessionState(taskLabels = initialSessionTasks) {
       specific: '',
       contents: '',
     },
-    tasks: taskLabels.map((label) => createEmptyTask(label)),
+    warmupTasks: [createEmptyTask('Calentamiento 1')],
+    tasks: mainTaskLabels.map((label) => createEmptyTask(label)),
+    closing: createEmptyTask('Vuelta a la calma o cierre reflexivo'),
     evaluation: {
       finalComment: '',
       improvements: '',
@@ -424,21 +420,29 @@ function textareaControl(label, name, value, placeholder = '') {
   `;
 }
 
-function taskEditor(task, index) {
+function taskEditor(task, index, prefix = 'task', options = {}) {
+  const { canDelete = false, deleteLabel = 'Eliminar tarea' } = options;
   return `
     <article class="task-editor">
       <div class="task-editor-heading">
-        <p class="eyebrow">${task.label}</p>
-        <h3>${task.label}</h3>
+        <div>
+          <p class="eyebrow">${escapeHtml(task.label)}</p>
+          <h3>${escapeHtml(task.label)}</h3>
+        </div>
+        ${
+          canDelete
+            ? `<button class="secondary small-button" type="button" data-delete-${prefix}="${index}">${deleteLabel}</button>`
+            : ''
+        }
       </div>
       <div class="form-grid two-columns">
-        ${fieldControl('Nombre de la tarea', `task-${index}-name`, task.name)}
-        ${fieldControl('Organización del grupo', `task-${index}-organization`, task.organization)}
+        ${fieldControl('Nombre de la tarea', `${prefix}-${index}-name`, task.name)}
+        ${fieldControl('Organización del grupo', `${prefix}-${index}-organization`, task.organization)}
       </div>
-      ${textareaControl('Descripción breve', `task-${index}-description`, task.description)}
-      ${textareaControl('Reglas o consignas', `task-${index}-rules`, task.rules)}
-      ${textareaControl('Variantes o progresiones', `task-${index}-variants`, task.variants)}
-      ${textareaControl('Esquema o dibujo (si procede)', `task-${index}-sketch`, task.sketch, 'Espacio reservado para describir o incorporar posteriormente un esquema.')}
+      ${textareaControl('Descripción breve', `${prefix}-${index}-description`, task.description)}
+      ${textareaControl('Reglas o consignas', `${prefix}-${index}-rules`, task.rules)}
+      ${textareaControl('Variantes o progresiones', `${prefix}-${index}-variants`, task.variants)}
+      ${textareaControl('Esquema o dibujo (si procede)', `${prefix}-${index}-sketch`, task.sketch, 'Espacio reservado para describir o incorporar posteriormente un esquema.')}
     </article>
   `;
 }
@@ -486,10 +490,42 @@ function renderSessionDesigner() {
           <section class="form-section">
             <div class="form-section-heading">
               <h2>3. Estructura de la sesión</h2>
-              <button class="secondary" type="button" data-add-task>Añadir tarea</button>
+            </div>
+            <div class="session-phase-heading">
+              <div>
+                <p class="eyebrow">Calentamiento</p>
+                <h3>Tareas de calentamiento</h3>
+              </div>
+              <button class="secondary" type="button" data-add-warmup>Añadir calentamiento</button>
+            </div>
+            <div id="warmup-editors" class="task-editor-list">
+              ${sessionDesignerState.warmupTasks
+                .map((task, index) =>
+                  taskEditor(task, index, 'warmup', {
+                    canDelete: sessionDesignerState.warmupTasks.length > 1,
+                    deleteLabel: 'Eliminar calentamiento',
+                  }),
+                )
+                .join('')}
+            </div>
+            <div class="session-phase-heading">
+              <div>
+                <p class="eyebrow">Parte principal</p>
+                <h3>Tareas principales</h3>
+              </div>
+              <button class="secondary" type="button" data-add-task>Añadir tarea principal</button>
             </div>
             <div id="task-editors" class="task-editor-list">
               ${sessionDesignerState.tasks.map((task, index) => taskEditor(task, index)).join('')}
+            </div>
+            <div class="session-phase-heading single-heading">
+              <div>
+                <p class="eyebrow">Cierre</p>
+                <h3>Vuelta a la calma o cierre reflexivo</h3>
+              </div>
+            </div>
+            <div id="closing-editor" class="task-editor-list">
+              ${taskEditor(sessionDesignerState.closing, 0, 'closing')}
             </div>
           </section>
 
@@ -501,6 +537,7 @@ function renderSessionDesigner() {
 
           <div class="form-actions">
             <button type="button" data-copy-session>Copiar sesión</button>
+            <button class="secondary" type="button" data-download-word>Descargar ficha en Word</button>
             <button class="secondary" type="button" data-clear-session>Limpiar formulario</button>
           </div>
           <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
@@ -538,18 +575,25 @@ function readSessionForm() {
     specific: data.get('objectives-specific') || '',
     contents: data.get('objectives-contents') || '',
   };
-  sessionDesignerState.tasks = sessionDesignerState.tasks.map((task, index) => ({
-    label: task.label,
-    name: data.get(`task-${index}-name`) || '',
-    description: data.get(`task-${index}-description`) || '',
-    organization: data.get(`task-${index}-organization`) || '',
-    rules: data.get(`task-${index}-rules`) || '',
-    variants: data.get(`task-${index}-variants`) || '',
-    sketch: data.get(`task-${index}-sketch`) || '',
-  }));
+  sessionDesignerState.warmupTasks = sessionDesignerState.warmupTasks.map((task, index) => readTaskFromForm(data, task, index, 'warmup'));
+  sessionDesignerState.tasks = sessionDesignerState.tasks.map((task, index) => readTaskFromForm(data, task, index, 'task'));
+  sessionDesignerState.closing = readTaskFromForm(data, sessionDesignerState.closing, 0, 'closing');
   sessionDesignerState.evaluation = {
     finalComment: data.get('evaluation-finalComment') || '',
     improvements: data.get('evaluation-improvements') || '',
+  };
+}
+
+
+function readTaskFromForm(data, task, index, prefix) {
+  return {
+    label: task.label,
+    name: data.get(`${prefix}-${index}-name`) || '',
+    description: data.get(`${prefix}-${index}-description`) || '',
+    organization: data.get(`${prefix}-${index}-organization`) || '',
+    rules: data.get(`${prefix}-${index}-rules`) || '',
+    variants: data.get(`${prefix}-${index}-variants`) || '',
+    sketch: data.get(`${prefix}-${index}-sketch`) || '',
   };
 }
 
@@ -586,22 +630,23 @@ function sessionPreviewHtml(state) {
       </section>
       <section>
         <h4>Estructura de la sesión</h4>
-        <div class="session-task-list">
-          ${state.tasks
-            .map(
-              (task) => `
-                <article class="session-task">
-                  <span>${escapeHtml(task.label)}</span>
-                  <h5>${escapeHtml(filledValue(task.name, 'Nombre pendiente'))}</h5>
-                  <p><strong>Descripción:</strong> ${nl2br(task.description)}</p>
-                  <p><strong>Organización:</strong> ${nl2br(task.organization)}</p>
-                  <p><strong>Reglas o consignas:</strong> ${nl2br(task.rules)}</p>
-                  <p><strong>Variantes o progresiones:</strong> ${nl2br(task.variants)}</p>
-                  <p><strong>Esquema o dibujo:</strong> ${nl2br(task.sketch)}</p>
-                </article>
-              `,
-            )
-            .join('')}
+        <div class="session-phase-preview">
+          <h5>Calentamiento</h5>
+          <div class="session-task-list">
+            ${state.warmupTasks.map((task) => taskPreviewHtml(task)).join('')}
+          </div>
+        </div>
+        <div class="session-phase-preview">
+          <h5>Parte principal</h5>
+          <div class="session-task-list">
+            ${state.tasks.map((task) => taskPreviewHtml(task)).join('')}
+          </div>
+        </div>
+        <div class="session-phase-preview">
+          <h5>Vuelta a la calma o cierre reflexivo</h5>
+          <div class="session-task-list">
+            ${taskPreviewHtml(state.closing)}
+          </div>
         </div>
       </section>
       <section>
@@ -609,6 +654,21 @@ function sessionPreviewHtml(state) {
         <p><strong>Comentario final:</strong> ${nl2br(state.evaluation.finalComment)}</p>
         <p><strong>Propuestas de mejora:</strong> ${nl2br(state.evaluation.improvements)}</p>
       </section>
+    </article>
+  `;
+}
+
+
+function taskPreviewHtml(task) {
+  return `
+    <article class="session-task">
+      <span>${escapeHtml(task.label)}</span>
+      <h5>${escapeHtml(filledValue(task.name, 'Nombre pendiente'))}</h5>
+      <p><strong>Descripción:</strong> ${nl2br(task.description)}</p>
+      <p><strong>Organización:</strong> ${nl2br(task.organization)}</p>
+      <p><strong>Reglas o consignas:</strong> ${nl2br(task.rules)}</p>
+      <p><strong>Variantes o progresiones:</strong> ${nl2br(task.variants)}</p>
+      <p><strong>Esquema o dibujo:</strong> ${nl2br(task.sketch)}</p>
     </article>
   `;
 }
@@ -634,18 +694,14 @@ function sessionPlainText(state) {
     'ESTRUCTURA DE LA SESIÓN',
   ];
 
-  state.tasks.forEach((task) => {
-    lines.push(
-      '',
-      task.label.toUpperCase(),
-      `Nombre de la tarea: ${filledValue(task.name)}`,
-      `Descripción breve: ${filledValue(task.description)}`,
-      `Organización del grupo: ${filledValue(task.organization)}`,
-      `Reglas o consignas: ${filledValue(task.rules)}`,
-      `Variantes o progresiones: ${filledValue(task.variants)}`,
-      `Esquema o dibujo: ${filledValue(task.sketch)}`,
-    );
-  });
+  lines.push('', 'CALENTAMIENTO');
+  state.warmupTasks.forEach((task) => addTaskPlainText(lines, task));
+
+  lines.push('', 'PARTE PRINCIPAL');
+  state.tasks.forEach((task) => addTaskPlainText(lines, task));
+
+  lines.push('', 'VUELTA A LA CALMA O CIERRE REFLEXIVO');
+  addTaskPlainText(lines, state.closing);
 
   lines.push(
     '',
@@ -655,6 +711,20 @@ function sessionPlainText(state) {
   );
 
   return lines.join('\n');
+}
+
+
+function addTaskPlainText(lines, task) {
+  lines.push(
+    '',
+    task.label.toUpperCase(),
+    `Nombre de la tarea: ${filledValue(task.name)}`,
+    `Descripción breve: ${filledValue(task.description)}`,
+    `Organización del grupo: ${filledValue(task.organization)}`,
+    `Reglas o consignas: ${filledValue(task.rules)}`,
+    `Variantes o progresiones: ${filledValue(task.variants)}`,
+    `Esquema o dibujo: ${filledValue(task.sketch)}`,
+  );
 }
 
 async function copySessionToClipboard() {
@@ -684,21 +754,188 @@ async function copySessionToClipboard() {
   }
 }
 
-function addSessionTask() {
-  readSessionForm();
-  const taskNumber = sessionDesignerState.tasks.filter((task) => task.label.startsWith('Tarea')).length + 1;
-  const closingTask = sessionDesignerState.tasks.at(-1);
-  sessionDesignerState.tasks.splice(-1, 1, createEmptyTask(`Tarea ${taskNumber}`), closingTask);
+
+function wordText(value, fallback = 'Pendiente de completar') {
+  return escapeHtml(filledValue(value, fallback));
+}
+
+function wordMultiline(value, fallback = 'Pendiente de completar') {
+  return escapeHtml(filledValue(value, fallback)).replaceAll('\n', '<br />');
+}
+
+function wordTaskBlock(task) {
+  return `
+    <table class="task-table">
+      <tr>
+        <th colspan="2">${escapeHtml(task.label)} · ${wordText(task.name, 'Nombre pendiente')}</th>
+      </tr>
+      <tr>
+        <td class="field-label">Descripción breve</td>
+        <td>${wordMultiline(task.description)}</td>
+      </tr>
+      <tr>
+        <td class="field-label">Organización del grupo</td>
+        <td>${wordMultiline(task.organization)}</td>
+      </tr>
+      <tr>
+        <td class="field-label">Reglas o consignas</td>
+        <td>${wordMultiline(task.rules)}</td>
+      </tr>
+      <tr>
+        <td class="field-label">Variantes o progresiones</td>
+        <td>${wordMultiline(task.variants)}</td>
+      </tr>
+      <tr>
+        <td class="field-label">Esquema o dibujo</td>
+        <td>${wordMultiline(task.sketch, 'Espacio reservado para incorporar posteriormente un esquema o dibujo.')}</td>
+      </tr>
+    </table>
+  `;
+}
+
+function sessionWordHtml(state) {
+  return `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Ficha de sesión práctica</title>
+  <style>
+    body { color: #253a32; font-family: Arial, Helvetica, sans-serif; line-height: 1.45; margin: 28px; }
+    .cover { background: #143d30; color: #ffffff; padding: 24px 28px; }
+    .cover h1 { font-size: 30px; letter-spacing: .2px; margin: 0 0 6px; }
+    .cover p { font-size: 15px; margin: 0; }
+    .meta-table, .task-table, .section-table { border-collapse: collapse; margin: 16px 0 22px; width: 100%; }
+    .meta-table th { background: #e8f1ed; color: #143d30; font-size: 12px; text-align: left; text-transform: uppercase; }
+    .meta-table th, .meta-table td, .section-table th, .section-table td, .task-table th, .task-table td { border: 1px solid #d5e2dc; padding: 9px 10px; vertical-align: top; }
+    h2 { border-bottom: 2px solid #1d5f48; color: #143d30; font-size: 19px; margin: 24px 0 10px; padding-bottom: 5px; }
+    h3 { background: #f3f8f5; color: #1d5f48; font-size: 16px; margin: 16px 0 8px; padding: 8px 10px; }
+    .section-table th { background: #e8f1ed; color: #143d30; text-align: left; width: 28%; }
+    .task-table th { background: #1d5f48; color: #ffffff; font-size: 14px; text-align: left; }
+    .task-table .field-label { background: #f5faf7; color: #143d30; font-weight: bold; width: 26%; }
+    .footer-note { color: #5a7167; font-size: 11px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <h1>Ficha de sesión práctica</h1>
+    <p>Deportes Colectivos CAFD</p>
+  </div>
+
+  <table class="meta-table">
+    <tr>
+      <th>Deporte</th><th>Título de la sesión</th><th>Curso o grupo</th>
+    </tr>
+    <tr>
+      <td>${wordText(state.general.sport)}</td><td>${wordText(state.general.title, 'Título de la sesión')}</td><td>${wordText(state.general.group)}</td>
+    </tr>
+    <tr>
+      <th>Duración estimada</th><th>N.º aproximado de alumnos</th><th>Espacio disponible</th>
+    </tr>
+    <tr>
+      <td>${wordText(state.general.duration)}</td><td>${wordText(state.general.students)}</td><td>${wordText(state.general.space)}</td>
+    </tr>
+    <tr>
+      <th colspan="3">Material necesario</th>
+    </tr>
+    <tr>
+      <td colspan="3">${wordMultiline(state.general.materials)}</td>
+    </tr>
+  </table>
+
+  <h2>1. Objetivos y contenidos</h2>
+  <table class="section-table">
+    <tr><th>Objetivo principal</th><td>${wordMultiline(state.objectives.main)}</td></tr>
+    <tr><th>Objetivos específicos</th><td>${wordMultiline(state.objectives.specific)}</td></tr>
+    <tr><th>Contenidos técnico-tácticos trabajados</th><td>${wordMultiline(state.objectives.contents)}</td></tr>
+  </table>
+
+  <h2>2. Estructura de la sesión</h2>
+  <h3>Calentamiento</h3>
+  ${state.warmupTasks.map((task) => wordTaskBlock(task)).join('')}
+  <h3>Parte principal</h3>
+  ${state.tasks.map((task) => wordTaskBlock(task)).join('')}
+  <h3>Vuelta a la calma o cierre reflexivo</h3>
+  ${wordTaskBlock(state.closing)}
+
+  <h2>3. Evaluación y observación</h2>
+  <table class="section-table">
+    <tr><th>Comentario final de la sesión</th><td>${wordMultiline(state.evaluation.finalComment)}</td></tr>
+    <tr><th>Propuestas de mejora fundamentadas</th><td>${wordMultiline(state.evaluation.improvements)}</td></tr>
+  </table>
+  <p class="footer-note">Documento editable generado desde la herramienta Diseño de sesión de Deportes Colectivos CAFD.</p>
+</body>
+</html>`;
+}
+
+function slugifyFilePart(value) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function sessionWordFilename(state) {
+  const sport = slugifyFilePart(state.general.sport);
+  const title = slugifyFilePart(state.general.title);
+  if (!title) return 'ficha-sesion-deportes-colectivos.doc';
+  return `ficha-sesion-${[sport, title].filter(Boolean).join('-')}.doc`;
+}
+
+function downloadSessionWord() {
+  refreshSessionPreview();
+  const status = document.querySelector('#copy-status');
+  const html = sessionWordHtml(sessionDesignerState);
+  const blob = new Blob(['\ufeff', html], { type: 'application/msword;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = sessionWordFilename(sessionDesignerState);
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 0);
+  if (status) status.textContent = 'Ficha de sesión en Word descargada.';
+}
+
+function rerenderSessionDesigner() {
   app.innerHTML = renderSessionDesigner();
   bindInteractions();
   bindSessionDesignerInteractions();
 }
 
+function renumberWarmupTasks() {
+  sessionDesignerState.warmupTasks = sessionDesignerState.warmupTasks.map((task, index) => ({
+    ...task,
+    label: `Calentamiento ${index + 1}`,
+  }));
+}
+
+function addWarmupTask() {
+  readSessionForm();
+  sessionDesignerState.warmupTasks.push(createEmptyTask(`Calentamiento ${sessionDesignerState.warmupTasks.length + 1}`));
+  rerenderSessionDesigner();
+}
+
+function deleteWarmupTask(event) {
+  readSessionForm();
+  const index = Number(event.currentTarget.dataset.deleteWarmup);
+  if (Number.isNaN(index) || sessionDesignerState.warmupTasks.length <= 1) return;
+  sessionDesignerState.warmupTasks.splice(index, 1);
+  renumberWarmupTasks();
+  rerenderSessionDesigner();
+}
+
+function addSessionTask() {
+  readSessionForm();
+  const taskNumber = sessionDesignerState.tasks.filter((task) => task.label.startsWith('Tarea')).length + 1;
+  sessionDesignerState.tasks.push(createEmptyTask(`Tarea ${taskNumber}`));
+  rerenderSessionDesigner();
+}
+
 function clearSessionForm() {
   sessionDesignerState = createEmptySessionState();
-  app.innerHTML = renderSessionDesigner();
-  bindInteractions();
-  bindSessionDesignerInteractions();
+  rerenderSessionDesigner();
 }
 
 function bindSessionDesignerInteractions() {
@@ -708,8 +945,11 @@ function bindSessionDesignerInteractions() {
   form.addEventListener('input', refreshSessionPreview);
   form.addEventListener('change', refreshSessionPreview);
 
+  document.querySelector('[data-add-warmup]')?.addEventListener('click', addWarmupTask);
   document.querySelector('[data-add-task]')?.addEventListener('click', addSessionTask);
+  document.querySelectorAll('[data-delete-warmup]').forEach((button) => button.addEventListener('click', deleteWarmupTask));
   document.querySelector('[data-copy-session]')?.addEventListener('click', copySessionToClipboard);
+  document.querySelector('[data-download-word]')?.addEventListener('click', downloadSessionWord);
   document.querySelector('[data-clear-session]')?.addEventListener('click', clearSessionForm);
 }
 
