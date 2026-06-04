@@ -2,13 +2,13 @@
 
 Aplicación web docente para la asignatura **Deportes Colectivos** del Grado en Ciencias de la Actividad Física y del Deporte de la Universidad de Zaragoza.
 
-Esta primera versión es un repositorio navegable de materiales de aula invertida. No incluye login, subida directa de archivos, base de datos ni conexión con Google Drive API: el profesor incorpora manualmente los enlaces en `src/data.js`.
+El repositorio funciona como una biblioteca navegable de carpetas de Google Drive organizadas por deporte, bloque de contenido y curso académico. No incluye login, subida directa de archivos, base de datos ni conexión con Google Drive API: el profesor incorpora manualmente los enlaces en `src/data.js`.
 
 ## Estructura
 
 - `index.html`: documento base de la aplicación.
-- `src/data.js`: deportes, bloques, formatos y recursos editables.
-- `src/app.js`: navegación, filtros y renderizado de páginas.
+- `src/data.js`: deportes, bloques de contenido y matriz de carpetas Drive por curso académico.
+- `src/app.js`: navegación, filtros por deporte/bloque/curso y renderizado de páginas.
 - `src/styles.css`: diseño responsive y componentes visuales.
 - `scripts/build.mjs`: construcción estática en `dist/`, preparada para Vercel.
 
@@ -20,6 +20,6 @@ npm run build
 npm run preview
 ```
 
-## Actualizar recursos
+## Actualizar carpetas Drive
 
-Para añadir un recurso nuevo, duplica un objeto del array `resources` en `src/data.js`, actualiza sus metadatos y sustituye `driveUrl` por el enlace de Google Drive revisado.
+Cada entrada del array `resources` representa una carpeta recopilatoria de Google Drive. Para publicar enlaces reales, localiza el recurso por su `id` en `src/data.js` y sustituye `ENLACE_EDITABLE` por el identificador de la carpeta correspondiente.
