@@ -1,8 +1,8 @@
-import { contentBlocks, formats, resources, sports } from './data.js';
+import { contentBlocks, resources, sports } from './data.js';
 
 const app = document.querySelector('#app');
 const nav = document.querySelector('#main-nav');
-let filters = { sport: 'Todos', block: 'Todos', format: 'Todos', academicYear: 'Todos' };
+let filters = { sport: 'Todos', block: 'Todos', academicYear: 'Todos' };
 
 const navItems = [
   { id: 'inicio', label: 'Inicio' },
@@ -66,7 +66,7 @@ function renderHome() {
         </div>
       </div>
       <div class="stats-card" aria-label="Resumen del repositorio">
-        <strong>${resources.length}</strong><span>recursos de ejemplo editables</span>
+        <strong>${resources.length}</strong><span>carpetas de Google Drive</span>
         <strong>${sports.length}</strong><span>deportes colectivos</span>
         <strong>${contentBlocks.length}</strong><span>bloques de contenido por deporte</span>
       </div>
@@ -92,10 +92,9 @@ function renderRepository() {
   const filteredResources = resources.filter((resource) => {
     const bySport = filters.sport === 'Todos' || resource.sport === filters.sport;
     const byBlock = filters.block === 'Todos' || resource.block === filters.block;
-    const byFormat = filters.format === 'Todos' || resource.format === filters.format;
     const byAcademicYear =
       filters.academicYear === 'Todos' || resource.academicYear === filters.academicYear;
-    return bySport && byBlock && byFormat && byAcademicYear;
+    return bySport && byBlock && byAcademicYear;
   });
 
   return `
@@ -103,14 +102,13 @@ function renderRepository() {
       ${pageIntro(
         'Repositorio general',
         'Consulta todos los materiales disponibles',
-        'Filtra los recursos por deporte, bloque de contenido, formato y curso académico. Los ejemplos incluidos son ficticios y editables para facilitar la actualización manual de enlaces a Google Drive.',
+        'Filtra las carpetas recopilatorias por deporte, bloque de contenido y curso académico. Cada tarjeta enlaza a una carpeta de Google Drive preparada para reunir los materiales de aula invertida del alumnado.',
       )}
       <div class="filters" aria-label="Filtros del repositorio">
         ${selectFilter('Deporte', 'sport', ['Todos', ...sports.map((sport) => sport.slug)], (value) =>
           value === 'Todos' ? value : sportName(value),
         )}
         ${selectFilter('Bloque', 'block', ['Todos', ...contentBlocks], (value) => value)}
-        ${selectFilter('Formato', 'format', ['Todos', ...formats], (value) => value)}
         ${selectFilter('Curso académico', 'academicYear', ['Todos', ...academicYearsFrom(resources)], (value) => value)}
       </div>
       ${resourceGrid(filteredResources, 'No hay recursos con los filtros seleccionados.')}
@@ -189,17 +187,14 @@ function resourceGrid(items, emptyText) {
             <article class="resource-card">
               <div class="card-topline">
                 <span>${sportName(resource.sport)}</span>
-                <span>${resource.format}</span>
               </div>
               <h3>${resource.title}</h3>
               <p>${resource.description}</p>
               <dl>
                 <div><dt>Bloque</dt><dd>${resource.block}</dd></div>
-                <div><dt>Autoría</dt><dd>${resource.authorship}</dd></div>
                 <div><dt>Curso</dt><dd>${resource.academicYear}</dd></div>
               </dl>
-              ${resource.isEditableExample ? '<span class="editable-badge">Ejemplo editable</span>' : ''}
-              <a class="drive-link" href="${resource.driveUrl}" target="_blank" rel="noreferrer">Abrir en Google Drive</a>
+              <a class="drive-link" href="${resource.driveUrl}" target="_blank" rel="noopener noreferrer">Abrir carpeta en Google Drive</a>
             </article>
           `,
         )
