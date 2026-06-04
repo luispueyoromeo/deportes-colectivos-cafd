@@ -513,3 +513,157 @@ dd {
     gap: 0.35rem;
   }
 }
+
+.info-card-grid,
+.ai-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.info-card-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ai-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.info-card,
+.highlight-panel,
+.callout-panel,
+.declaration-panel {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 1.4rem;
+  box-shadow: 0 10px 28px rgba(18, 51, 38, 0.06);
+}
+
+.info-card {
+  padding: 1.2rem;
+}
+
+.info-card p,
+.highlight-panel p,
+.callout-panel p,
+.declaration-panel p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.info-card p:last-child,
+.highlight-panel p:last-child,
+.callout-panel p:last-child,
+.declaration-panel p:last-child {
+  margin-bottom: 0;
+}
+
+.usage-grid .info-card:first-child,
+.usage-grid .info-card:last-child {
+  grid-column: span 2;
+}
+
+.highlight-panel,
+.callout-panel,
+.declaration-panel {
+  margin-top: 1.5rem;
+  padding: clamp(1.1rem, 3vw, 1.6rem);
+}
+
+.highlight-panel {
+  border-left: 0.45rem solid var(--gold);
+}
+
+.callout-panel {
+  background: linear-gradient(135deg, rgba(29, 95, 72, 0.1), rgba(36, 75, 122, 0.08));
+}
+
+.callout-panel li {
+  color: #2b4138;
+  line-height: 1.55;
+  margin-bottom: 0.55rem;
+}
+
+.block-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.block-badges span {
+  background: var(--green-900);
+  border-radius: 999px;
+  box-shadow: 0 10px 22px rgba(18, 51, 38, 0.14);
+  color: #fff;
+  font-weight: 850;
+  padding: 0.75rem 1rem;
+}
+
+.guide-section {
+  margin-top: 2rem;
+}
+
+.numbered-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.compact-card p {
+  color: #2b4138;
+  font-weight: 750;
+}
+
+.positive-panel {
+  border-top: 0.35rem solid var(--green-700);
+}
+
+.caution-panel {
+  border-top: 0.35rem solid #b45309;
+}
+
+.declaration-panel {
+  background: var(--green-900);
+  color: #fff;
+}
+
+.declaration-panel h2,
+.declaration-panel p {
+  color: #fff;
+}
+
+.declaration-panel p {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+@media (max-width: 980px) {
+  .info-card-grid,
+  .ai-grid,
+  .numbered-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .usage-grid .info-card:first-child,
+  .usage-grid .info-card:last-child {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 680px) {
+  .info-card-grid,
+  .ai-grid,
+  .numbered-list {
+    grid-template-columns: 1fr;
+  }
+
+  .info-card,
+  .highlight-panel,
+  .callout-panel,
+  .declaration-panel {
+    border-radius: 1.1rem;
+  }
+
+  .block-badges span {
+    width: 100%;
+  }
+}
