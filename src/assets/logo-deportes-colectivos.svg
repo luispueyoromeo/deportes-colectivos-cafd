@@ -1,0 +1,19 @@
+<svg width="260" height="72" viewBox="0 0 260 72" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="logoTitle logoDescription">
+  <title id="logoTitle">Deportes Colectivos Universidad de Zaragoza</title>
+  <desc id="logoDescription">Logo textual institucional con isotipo arquitectónico geométrico y dos líneas de texto.</desc>
+  <rect width="260" height="72" rx="16" fill="white"/>
+  <g transform="translate(14 12)">
+    <path d="M4 44H48" stroke="#123D6D" stroke-width="4" stroke-linecap="round"/>
+    <path d="M8 38H44" stroke="#123D6D" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M26 2L48 16H4L26 2Z" fill="#123D6D"/>
+    <path d="M10 20H16V35H10V20Z" fill="#123D6D"/>
+    <path d="M22 20H28V35H22V20Z" fill="#123D6D"/>
+    <path d="M34 20H40V35H34V20Z" fill="#123D6D"/>
+    <path d="M7 16H45" stroke="#D7A420" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="26" cy="13" r="3" fill="white"/>
+  </g>
+  <g fill="#123D6D">
+    <text x="76" y="30" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="800" letter-spacing="-0.3">Deportes Colectivos</text>
+    <text x="76" y="50" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13" font-weight="500" letter-spacing="0.15">Universidad de Zaragoza</text>
+  </g>
+</svg>
