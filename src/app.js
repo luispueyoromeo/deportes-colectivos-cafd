@@ -765,40 +765,61 @@ async function copySessionToClipboard() {
 }
 
 
-function wordText(value, fallback = 'Pendiente de completar') {
-  return escapeHtml(filledValue(value, fallback));
+function wordText(value) {
+  return escapeHtml(String(value ?? '').trim());
 }
 
-function wordMultiline(value, fallback = 'Pendiente de completar') {
-  return escapeHtml(filledValue(value, fallback)).replaceAll('\n', '<br />');
+function wordMultiline(value) {
+  return wordText(value).replaceAll('\n', '<br />');
 }
 
-function wordTaskBlock(task) {
+function compactWordCell(...values) {
+  return values
+    .map((value) => wordMultiline(value))
+    .filter(Boolean)
+    .join('<br />');
+}
+
+function taskNumber(phase, index) {
+  if (phase === 'warmup') return `C${index + 1}`;
+  if (phase === 'closing') return 'VC';
+  return String(index + 1);
+}
+
+function wordPhaseTable(title, tasks, phase) {
+  const hasSketch = tasks.some((task) => String(task.sketch ?? '').trim());
+  const sketchHeader = hasSketch ? '<th class="sketch-col">Esquema</th>' : '';
+  const sketchCell = hasSketch ? '<td class="sketch-col">${sketch}</td>' : '';
+
+  const rows = tasks
+    .map((task, index) => {
+      const sketch = wordMultiline(task.sketch);
+
+      return `
+        <tr>
+          <td class="number-col">${taskNumber(phase, index)}</td>
+          <td class="task-name-col">${wordText(task.name)}</td>
+          <td>${compactWordCell(task.description, task.organization)}</td>
+          <td>${wordMultiline(task.rules)}</td>
+          <td>${wordMultiline(task.variants)}</td>
+          ${hasSketch ? sketchCell.replace('${sketch}', sketch) : ''}
+        </tr>
+      `;
+    })
+    .join('');
+
   return `
-    <table class="task-table">
+    <h3>${escapeHtml(title)}</h3>
+    <table class="phase-table">
       <tr>
-        <th colspan="2">${escapeHtml(task.label)} · ${wordText(task.name, 'Nombre pendiente')}</th>
+        <th class="number-col">Nº</th>
+        <th class="task-name-col">Tarea</th>
+        <th>Descripción / organización</th>
+        <th>Reglas / consignas</th>
+        <th>Variantes / progresiones</th>
+        ${sketchHeader}
       </tr>
-      <tr>
-        <td class="field-label">Descripción breve</td>
-        <td>${wordMultiline(task.description)}</td>
-      </tr>
-      <tr>
-        <td class="field-label">Organización del grupo</td>
-        <td>${wordMultiline(task.organization)}</td>
-      </tr>
-      <tr>
-        <td class="field-label">Reglas o consignas</td>
-        <td>${wordMultiline(task.rules)}</td>
-      </tr>
-      <tr>
-        <td class="field-label">Variantes o progresiones</td>
-        <td>${wordMultiline(task.variants)}</td>
-      </tr>
-      <tr>
-        <td class="field-label">Esquema o dibujo</td>
-        <td>${wordMultiline(task.sketch, 'Espacio reservado para incorporar posteriormente un esquema o dibujo.')}</td>
-      </tr>
+      ${rows}
     </table>
   `;
 }
@@ -810,70 +831,75 @@ function sessionWordHtml(state) {
   <meta charset="utf-8" />
   <title>Ficha de sesión práctica</title>
   <style>
-    body { color: #253a32; font-family: Arial, Helvetica, sans-serif; line-height: 1.45; margin: 28px; }
-    .cover { background: #143d30; color: #ffffff; padding: 24px 28px; }
-    .cover h1 { font-size: 30px; letter-spacing: .2px; margin: 0 0 6px; }
-    .cover p { font-size: 15px; margin: 0; }
-    .meta-table, .task-table, .section-table { border-collapse: collapse; margin: 16px 0 22px; width: 100%; }
-    .meta-table th { background: #e8f1ed; color: #143d30; font-size: 12px; text-align: left; text-transform: uppercase; }
-    .meta-table th, .meta-table td, .section-table th, .section-table td, .task-table th, .task-table td { border: 1px solid #d5e2dc; padding: 9px 10px; vertical-align: top; }
-    h2 { border-bottom: 2px solid #1d5f48; color: #143d30; font-size: 19px; margin: 24px 0 10px; padding-bottom: 5px; }
-    h3 { background: #f3f8f5; color: #1d5f48; font-size: 16px; margin: 16px 0 8px; padding: 8px 10px; }
-    .section-table th { background: #e8f1ed; color: #143d30; text-align: left; width: 28%; }
-    .task-table th { background: #1d5f48; color: #ffffff; font-size: 14px; text-align: left; }
-    .task-table .field-label { background: #f5faf7; color: #143d30; font-weight: bold; width: 26%; }
-    .footer-note { color: #5a7167; font-size: 11px; margin-top: 24px; }
+    body { color: #243a32; font-family: Arial, Helvetica, sans-serif; font-size: 10.5px; line-height: 1.18; margin: 19px; }
+    .header-table, .meta-table, .section-table, .phase-table { border-collapse: collapse; width: 100%; }
+    .header-table { border-bottom: 2px solid #1d5f48; margin: 0 0 8px; }
+    .header-table td { border: 0; padding: 4px 5px 6px; vertical-align: bottom; }
+    .header-title { color: #143d30; font-size: 18px; font-weight: bold; margin: 0; }
+    .header-subtitle { color: #47645a; font-size: 10px; margin: 1px 0 0; text-transform: uppercase; }
+    .header-data { background: #eef6f2; border-left: 3px solid #8cb7a5; font-size: 9.5px; }
+    .header-data strong { color: #143d30; }
+    h2 { border-bottom: 1px solid #8cb7a5; color: #143d30; font-size: 13.5px; margin: 10px 0 5px; padding-bottom: 2px; }
+    h3 { background: #f3f8f5; color: #1d5f48; font-size: 11.5px; margin: 8px 0 3px; padding: 4px 5px; }
+    th, td { border: 1px solid #cfded7; padding: 4px 5px; vertical-align: top; }
+    th { background: #e8f1ed; color: #143d30; font-size: 9.5px; text-align: left; }
+    .meta-table, .section-table, .phase-table { margin: 0 0 8px; }
+    .meta-label { color: #143d30; font-weight: bold; width: 17%; }
+    .meta-value { width: 33%; }
+    .section-table th { width: 24%; }
+    .phase-table th { background: #dfeee7; }
+    .number-col { text-align: center; width: 5%; }
+    .task-name-col { width: 16%; }
+    .sketch-col { width: 15%; }
+    .footer-note { color: #5a7167; font-size: 9px; margin-top: 8px; }
   </style>
 </head>
 <body>
-  <div class="cover">
-    <h1>Ficha de sesión práctica</h1>
-    <p>Deportes Colectivos CAFD</p>
-  </div>
-
-  <table class="meta-table">
+  <table class="header-table">
     <tr>
-      <th>Fecha</th><th>Número de sesión</th><th>Deporte</th>
-    </tr>
-    <tr>
-      <td>${wordText(state.general.date)}</td><td>${wordText(state.general.sessionNumber)}</td><td>${wordText(state.general.sport)}</td>
-    </tr>
-    <tr>
-      <th>Título de la sesión</th><th>Curso o grupo</th><th>Duración estimada</th>
-    </tr>
-    <tr>
-      <td>${wordText(state.general.title, 'Título de la sesión')}</td><td>${wordText(state.general.group)}</td><td>${wordText(state.general.duration)}</td>
-    </tr>
-    <tr>
-      <th>N.º aproximado de alumnos</th><th>Espacio disponible</th><th></th>
-    </tr>
-    <tr>
-      <td>${wordText(state.general.students)}</td><td>${wordText(state.general.space)}</td><td></td>
-    </tr>
-    <tr>
-      <th colspan="3">Material necesario</th>
-    </tr>
-    <tr>
-      <td colspan="3">${wordMultiline(state.general.materials)}</td>
+      <td style="width: 42%;">
+        <p class="header-title">Ficha de sesión práctica</p>
+        <p class="header-subtitle">Deportes Colectivos CAFD</p>
+      </td>
+      <td class="header-data" style="width: 18%;"><strong>Fecha:</strong> ${wordText(state.general.date)}<br /><strong>Nº sesión:</strong> ${wordText(state.general.sessionNumber)}</td>
+      <td class="header-data" style="width: 18%;"><strong>Deporte:</strong> ${wordText(state.general.sport)}</td>
+      <td class="header-data" style="width: 22%;"><strong>Título:</strong> ${wordText(state.general.title)}</td>
     </tr>
   </table>
 
-  <h2>1. Objetivos y contenidos</h2>
+  <h2>1. Datos generales</h2>
+  <table class="meta-table">
+    <tr>
+      <td class="meta-label">Fecha</td><td class="meta-value">${wordText(state.general.date)}</td>
+      <td class="meta-label">Nº sesión</td><td class="meta-value">${wordText(state.general.sessionNumber)}</td>
+    </tr>
+    <tr>
+      <td class="meta-label">Deporte</td><td class="meta-value">${wordText(state.general.sport)}</td>
+      <td class="meta-label">Curso o grupo</td><td class="meta-value">${wordText(state.general.group)}</td>
+    </tr>
+    <tr>
+      <td class="meta-label">Duración estimada</td><td class="meta-value">${wordText(state.general.duration)}</td>
+      <td class="meta-label">N.º alumnos</td><td class="meta-value">${wordText(state.general.students)}</td>
+    </tr>
+    <tr>
+      <td class="meta-label">Espacio disponible</td><td class="meta-value">${wordText(state.general.space)}</td>
+      <td class="meta-label">Material necesario</td><td class="meta-value">${wordMultiline(state.general.materials)}</td>
+    </tr>
+  </table>
+
+  <h2>2. Objetivos y contenidos</h2>
   <table class="section-table">
     <tr><th>Objetivo principal</th><td>${wordMultiline(state.objectives.main)}</td></tr>
     <tr><th>Objetivos específicos</th><td>${wordMultiline(state.objectives.specific)}</td></tr>
     <tr><th>Contenidos técnico-tácticos trabajados</th><td>${wordMultiline(state.objectives.contents)}</td></tr>
   </table>
 
-  <h2>2. Estructura de la sesión</h2>
-  <h3>Calentamiento</h3>
-  ${state.warmupTasks.map((task) => wordTaskBlock(task)).join('')}
-  <h3>Parte principal</h3>
-  ${state.tasks.map((task) => wordTaskBlock(task)).join('')}
-  <h3>Vuelta a la calma o cierre reflexivo</h3>
-  ${wordTaskBlock(state.closing)}
+  <h2>3. Estructura de la sesión</h2>
+  ${wordPhaseTable('Calentamiento', state.warmupTasks, 'warmup')}
+  ${wordPhaseTable('Parte principal', state.tasks, 'main')}
+  ${wordPhaseTable('Vuelta a la calma o cierre reflexivo', [state.closing], 'closing')}
 
-  <h2>3. Evaluación y observación</h2>
+  <h2>4. Evaluación y observación</h2>
   <table class="section-table">
     <tr><th>Comentario final de la sesión</th><td>${wordMultiline(state.evaluation.finalComment)}</td></tr>
     <tr><th>Propuestas de mejora fundamentadas</th><td>${wordMultiline(state.evaluation.improvements)}</td></tr>
