@@ -16,9 +16,9 @@ const navItems = [
   { id: 'inicio', label: 'Inicio' },
   { id: 'repositorio', label: 'Repositorio' },
   { id: 'uso-repositorio', label: 'Uso del repositorio' },
-  { id: 'uso-ia', label: 'Uso responsable de IA' },
   { id: 'observacion-partido', label: 'Observación de partido' },
   { id: 'diseno-sesion', label: 'Diseño de sesión' },
+  { id: 'uso-ia', label: 'Uso responsable de IA' },
 ];
 
 function sportName(slug) {
@@ -1164,7 +1164,12 @@ function renderObservationPage() {
             <button type="button" class="secondary" data-delete-observation>Borrar borrador</button>
             <button type="button" data-copy-observation>Copiar informe</button>
             <button type="button" data-download-observation>Descargar informe en Word</button>
-            <button type="button" data-submit-observation>Enviar registro observacional al profesor</button>
+            <div class="observation-submit-group">
+              <button type="button" data-submit-observation>Enviar registro observacional al profesor</button>
+              <div class="submission-scope-notice" role="note">
+                <strong>Solo se enviarán al profesorado</strong> los datos estructurados de la checklist conductual de agresiones hacia el árbitro, la autoevaluación del árbitro y los datos mínimos de identificación del alumnado y del partido. El resto de apartados narrativos no se envían mediante este botón; utilízalos para elaborar el trabajo final por la vía indicada en la asignatura.
+              </div>
+            </div>
             <button type="button" class="secondary" data-clear-observation>Limpiar formulario</button>
           </div>
           <p id="observation-status" class="copy-status" role="status" aria-live="polite"></p>
@@ -1349,7 +1354,7 @@ async function submitObservationRecord() {
       mode: 'no-cors',
       body: JSON.stringify(payload),
     });
-    setObservationStatus('Registro observacional enviado. Comprueba que se ha recibido correctamente en la hoja de cálculo.');
+    setObservationStatus('Registro observacional enviado correctamente. Se han enviado únicamente los datos de la checklist conductual, la autoevaluación del árbitro y los datos básicos del partido.');
   } catch {
     setObservationStatus('No se ha podido enviar el registro observacional. Revisa la conexión o la configuración del endpoint.');
   }
