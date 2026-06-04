@@ -707,12 +707,40 @@ dd {
 }
 
 .form-section-heading,
-.form-actions {
+.form-actions,
+.session-phase-heading,
+.task-editor-heading {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: space-between;
+}
+
+.session-phase-heading {
+  border-top: 1px solid var(--line);
+  margin-top: 0.25rem;
+  padding-top: 1rem;
+}
+
+.form-section-heading + .session-phase-heading {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.session-phase-heading h3,
+.task-editor-heading h3 {
+  color: var(--green-900);
+  margin-bottom: 0;
+}
+
+.single-heading {
+  justify-content: flex-start;
+}
+
+.small-button {
+  min-height: auto;
+  padding: 0.55rem 0.8rem;
 }
 
 .form-grid {
@@ -865,6 +893,23 @@ textarea:focus {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.session-phase-preview {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
+.session-phase-preview:first-of-type {
+  margin-top: 0;
+}
+
+.session-phase-preview > h5 {
+  background: #f3f8f5;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.7rem;
+}
+
 .session-task-list {
   display: grid;
   gap: 0.75rem;
@@ -909,7 +954,9 @@ textarea:focus {
   }
 
   .form-actions button,
-  .form-section-heading button {
+  .form-section-heading button,
+  .session-phase-heading button,
+  .task-editor-heading button {
     width: 100%;
   }
 }
