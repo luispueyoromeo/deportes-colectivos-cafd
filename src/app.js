@@ -1343,15 +1343,15 @@ async function submitObservationRecord() {
     return;
   }
   try {
-    const response = await fetch(OBSERVATION_ENDPOINT, {
+    const payload = observationSubmissionPayload(observationState);
+    await fetch(OBSERVATION_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(observationSubmissionPayload(observationState)),
+      mode: 'no-cors',
+      body: JSON.stringify(payload),
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    setObservationStatus('Registro observacional enviado correctamente al profesor.');
-  } catch (error) {
-    setObservationStatus(`No se ha podido enviar el registro observacional: ${error.message}`);
+    setObservationStatus('Registro observacional enviado. Comprueba que se ha recibido correctamente en la hoja de cálculo.');
+  } catch {
+    setObservationStatus('No se ha podido enviar el registro observacional. Revisa la conexión o la configuración del endpoint.');
   }
 }
 
