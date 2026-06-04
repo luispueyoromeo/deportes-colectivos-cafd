@@ -7,6 +7,9 @@ let filters = { sport: 'Todos', block: 'Todos', academicYear: 'Todos' };
 const navItems = [
   { id: 'inicio', label: 'Inicio' },
   { id: 'repositorio', label: 'Repositorio' },
+  { id: 'uso-repositorio', label: 'Uso del repositorio' },
+  { id: 'guia-trabajo', label: 'Guía del trabajo' },
+  { id: 'uso-ia', label: 'Uso responsable de IA' },
   ...sports.map((sport) => ({ id: sport.slug, label: sport.name })),
   { id: 'incorporacion', label: 'Cómo se incorporan' },
   { id: 'calidad', label: 'Guía de calidad' },
@@ -203,6 +206,241 @@ function resourceGrid(items, emptyText) {
   `;
 }
 
+
+function cardList(title, items, ordered = false) {
+  const tag = ordered ? 'ol' : 'ul';
+  return `
+    <article class="info-panel">
+      <h2>${title}</h2>
+      <${tag}>
+        ${items.map((item) => `<li>${item}</li>`).join('')}
+      </${tag}>
+    </article>
+  `;
+}
+
+function renderRepositoryUse() {
+  const usageCards = [
+    {
+      title: 'Qué es',
+      text:
+        'El repositorio de Deportes Colectivos CAFD es un espacio complementario a Moodle destinado a centralizar los materiales de aula invertida elaborados y revisados en el marco de la asignatura.',
+    },
+    {
+      title: 'Para qué sirve',
+      text:
+        'Su finalidad es ofrecer una consulta más visual, ordenada e interactiva de los recursos vinculados al aprendizaje previo, facilitando su reutilización y la organización progresiva del material docente.',
+    },
+    {
+      title: 'Cómo se organiza',
+      text:
+        'Los materiales están organizados por deporte, bloque de contenido y curso académico. Cada tarjeta enlaza a carpetas de Google Drive revisadas y ordenadas por el profesorado.',
+    },
+    {
+      title: 'Relación con Moodle',
+      text:
+        'No sustituye a Moodle como plataforma oficial de la asignatura. Moodle sigue siendo el espacio institucional de referencia para la información, entregas y comunicaciones oficiales.',
+    },
+    {
+      title: 'Cómo debe usarlo el alumnado',
+      text:
+        'Antes de cada bloque práctico, el alumnado podrá consultar los materiales indicados por el profesorado para llegar a clase con una base conceptual previa que facilite la participación activa.',
+    },
+  ];
+
+  return `
+    <section class="page-section two-column-page">
+      ${pageIntro(
+        'Uso docente del repositorio',
+        'Uso del repositorio',
+        'El repositorio de Deportes Colectivos CAFD es un espacio complementario a Moodle destinado a centralizar los materiales de aula invertida elaborados y revisados en el marco de la asignatura. No sustituye a Moodle como plataforma oficial, sino que actúa como una herramienta de consulta más visual, ordenada e interactiva para acceder a los recursos vinculados al aprendizaje previo.',
+      )}
+      <div class="highlight-panel">
+        <p>
+          Los materiales se organizan por deporte, bloque de contenido y curso académico. Cada tarjeta del repositorio
+          enlaza a una carpeta de Google Drive donde se recopilan recursos relacionados con reglamento, fundamentos
+          técnicos o fundamentos tácticos.
+        </p>
+        <p>
+          Antes de cada bloque práctico, el alumnado podrá consultar los materiales indicados por el profesorado con el
+          objetivo de llegar a la sesión con una base conceptual previa que facilite la comprensión de las tareas y la
+          aplicación de los contenidos en situaciones reales de práctica.
+        </p>
+      </div>
+      <div class="info-card-grid usage-grid">
+        ${usageCards
+          .map(
+            (card) => `
+              <article class="info-card">
+                <h2>${card.title}</h2>
+                <p>${card.text}</p>
+              </article>
+            `,
+          )
+          .join('')}
+      </div>
+      <div class="callout-panel">
+        <h2>Continuidad entre cursos</h2>
+        <p>
+          La aplicación pretende facilitar la consulta, la reutilización y la organización progresiva del material docente
+          generado en la asignatura, de modo que los materiales puedan ser utilizados por la clase actual y por futuros
+          cursos académicos.
+        </p>
+      </div>
+    </section>
+  `;
+}
+
+function renderWorkGuide() {
+  const formats = [
+    'Vídeo explicativo o demostrativo',
+    'Presentación grabada',
+    'Recurso interactivo',
+    'Infografía',
+    'Podcast o entrevista',
+    'Juego o cuestionario interactivo',
+    'Videotutorial',
+  ];
+  const structure = [
+    'Contextualización del trabajo realizado',
+    'Descripción del contenido o fundamento',
+    'Finalidad del contenido',
+    'Tipos o variantes, si las hay',
+    'Ejecución técnica o aplicación táctica',
+    'Errores comunes o dificultades habituales',
+    'Tareas de aprendizaje y/o tareas correctivas',
+    'Referencias bibliográficas',
+    'Integrantes del grupo',
+  ];
+  const recommendations = [
+    'Buscar equilibrio entre rigor académico y creatividad.',
+    'Utilizar ejemplos visuales, esquemas o clips reales.',
+    'Relacionar el contenido con situaciones prácticas de enseñanza-aprendizaje.',
+    'Evitar explicaciones excesivamente superficiales.',
+    'Cuidar la claridad del lenguaje.',
+    'Revisar la calidad de la información antes de entregar.',
+    'Citar las fuentes utilizadas.',
+    'Recordar que el objetivo final es aprender enseñando.',
+  ];
+
+  return `
+    <section class="page-section two-column-page">
+      ${pageIntro(
+        'Apoyo rápido para el trabajo grupal',
+        'Guía para elaborar los materiales de aula invertida',
+        'Esta guía resume los elementos principales que debe tener el trabajo grupal de aula invertida. Su finalidad es orientar la elaboración de materiales rigurosos, creativos y útiles para comprender, enseñar y ejemplificar los fundamentos del deporte asignado.',
+      )}
+      <div class="highlight-panel">
+        <h2>Objetivo del trabajo</h2>
+        <p>
+          El alumnado debe desarrollar, explicar y presentar de forma creativa, original y didáctica los contenidos
+          asignados, vinculados al reglamento, los fundamentos técnicos o los fundamentos tácticos del deporte
+          correspondiente.
+        </p>
+      </div>
+      <div class="block-badges" aria-label="Bloques de contenido del trabajo">
+        ${contentBlocks.map((block) => `<span>${block}</span>`).join('')}
+      </div>
+      <div class="panel-grid">
+        ${cardList('Producto final', [
+          'Debe permitir comprender, enseñar y ejemplificar el contenido elegido mediante recursos visuales, interactivos o audiovisuales.',
+          `Formatos posibles: ${formats.join(', ')}.`,
+        ])}
+        ${cardList('Relación con el repositorio', [
+          'Los materiales revisados podrán incorporarse posteriormente al repositorio de la app.',
+          'Su clasificación se realizará por deporte, bloque de contenido y curso académico.',
+        ])}
+      </div>
+      <div class="guide-section">
+        <h2>Estructura mínima recomendada</h2>
+        <div class="quality-list numbered-list">
+          ${structure
+            .map(
+              (item, index) => `
+                <article>
+                  <span>${String(index + 1).padStart(2, '0')}</span>
+                  <p>${item}</p>
+                </article>
+              `,
+            )
+            .join('')}
+        </div>
+      </div>
+      <div class="guide-section">
+        <h2>Recomendaciones de calidad</h2>
+        <div class="info-card-grid">
+          ${recommendations
+            .map(
+              (recommendation) => `
+                <article class="info-card compact-card">
+                  <p>${recommendation}</p>
+                </article>
+              `,
+            )
+            .join('')}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderResponsibleAi() {
+  const suitableUses = [
+    'Organizar ideas iniciales.',
+    'Mejorar la estructura de una presentación.',
+    'Revisar claridad, coherencia y redacción.',
+    'Proponer ejemplos didácticos que después deben ser revisados.',
+    'Generar preguntas de autoevaluación.',
+    'Ayudar a transformar contenidos complejos en explicaciones más comprensibles.',
+    'Sugerir formas visuales o interactivas de presentar un contenido.',
+  ];
+  const unsuitableUses = [
+    'Entregar contenido generado automáticamente sin revisión crítica.',
+    'Copiar respuestas de IA como si fueran elaboración propia.',
+    'Inventar referencias bibliográficas.',
+    'Incluir información no contrastada.',
+    'Sustituir la consulta de apuntes, bibliografía o materiales docentes.',
+    'Utilizar IA para evitar el trabajo grupal o la comprensión del contenido.',
+    'Generar imágenes, vídeos o textos que vulneren derechos de autor o incluyan personas sin permiso.',
+  ];
+
+  return `
+    <section class="page-section two-column-page">
+      ${pageIntro(
+        'Criterios formativos y éticos',
+        'Uso responsable de IA',
+        'La inteligencia artificial puede utilizarse como apoyo al aprendizaje, la organización de ideas, la mejora de la redacción o la generación de ejemplos, pero no debe sustituir el trabajo propio del alumnado ni la revisión crítica de la información.',
+      )}
+      <div class="ai-grid">
+        <article class="info-panel positive-panel">
+          <h2>Usos adecuados</h2>
+          <ul>${suitableUses.map((item) => `<li>${item}</li>`).join('')}</ul>
+        </article>
+        <article class="info-panel caution-panel">
+          <h2>Usos no adecuados</h2>
+          <ul>${unsuitableUses.map((item) => `<li>${item}</li>`).join('')}</ul>
+        </article>
+      </div>
+      <div class="declaration-panel">
+        <h2>Declaración de uso de IA</h2>
+        <p>
+          “En caso de haber utilizado herramientas de inteligencia artificial de forma relevante, el grupo deberá indicarlo
+          brevemente, especificando para qué se ha usado: organización de ideas, revisión lingüística, generación de
+          ejemplos, apoyo visual u otras funciones.”
+        </p>
+      </div>
+      <div class="callout-panel">
+        <h2>Responsabilidad del alumnado</h2>
+        <ul>
+          <li>El alumnado es responsable de la calidad, veracidad y adecuación del material entregado.</li>
+          <li>Todo contenido generado o apoyado por IA debe ser revisado, corregido y adaptado al contexto de la asignatura.</li>
+          <li>El uso de IA debe contribuir al aprendizaje, no sustituirlo.</li>
+        </ul>
+      </div>
+    </section>
+  `;
+}
+
 function renderIncorporation() {
   const steps = [
     'Los alumnos crean sus materiales de aula invertida.',
@@ -303,6 +541,12 @@ function render() {
   const sport = sports.find((item) => item.slug === route);
   if (route === 'repositorio') {
     app.innerHTML = renderRepository();
+  } else if (route === 'uso-repositorio') {
+    app.innerHTML = renderRepositoryUse();
+  } else if (route === 'guia-trabajo') {
+    app.innerHTML = renderWorkGuide();
+  } else if (route === 'uso-ia') {
+    app.innerHTML = renderResponsibleAi();
   } else if (sport) {
     app.innerHTML = renderSportPage(sport);
   } else if (route === 'incorporacion') {
