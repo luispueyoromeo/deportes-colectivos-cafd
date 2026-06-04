@@ -16,7 +16,6 @@ const navItems = [
   { id: 'inicio', label: 'Inicio' },
   { id: 'repositorio', label: 'Repositorio' },
   { id: 'uso-repositorio', label: 'Uso del repositorio' },
-  { id: 'guia-trabajo', label: 'Guía del trabajo' },
   { id: 'uso-ia', label: 'Uso responsable de IA' },
   { id: 'observacion-partido', label: 'Observación de partido' },
   { id: 'diseno-sesion', label: 'Diseño de sesión' },
@@ -310,99 +309,6 @@ function renderRepositoryUse() {
           generado en la asignatura, de modo que los materiales puedan ser utilizados por la clase actual y por futuros
           cursos académicos.
         </p>
-      </div>
-    </section>
-  `;
-}
-
-function renderWorkGuide() {
-  const formats = [
-    'Vídeo explicativo o demostrativo',
-    'Presentación grabada',
-    'Recurso interactivo',
-    'Infografía',
-    'Podcast o entrevista',
-    'Juego o cuestionario interactivo',
-    'Videotutorial',
-  ];
-  const structure = [
-    'Contextualización del trabajo realizado',
-    'Descripción del contenido o fundamento',
-    'Finalidad del contenido',
-    'Tipos o variantes, si las hay',
-    'Ejecución técnica o aplicación táctica',
-    'Errores comunes o dificultades habituales',
-    'Tareas de aprendizaje y/o tareas correctivas',
-    'Referencias bibliográficas',
-    'Integrantes del grupo',
-  ];
-  const recommendations = [
-    'Buscar equilibrio entre rigor académico y creatividad.',
-    'Utilizar ejemplos visuales, esquemas o clips reales.',
-    'Relacionar el contenido con situaciones prácticas de enseñanza-aprendizaje.',
-    'Evitar explicaciones excesivamente superficiales.',
-    'Cuidar la claridad del lenguaje.',
-    'Revisar la calidad de la información antes de entregar.',
-    'Citar las fuentes utilizadas.',
-    'Recordar que el objetivo final es aprender enseñando.',
-  ];
-
-  return `
-    <section class="page-section two-column-page">
-      ${pageIntro(
-        'Apoyo rápido para el trabajo grupal',
-        'Guía para elaborar los materiales de aula invertida',
-        'Esta guía resume los elementos principales que debe tener el trabajo grupal de aula invertida. Su finalidad es orientar la elaboración de materiales rigurosos, creativos y útiles para comprender, enseñar y ejemplificar los fundamentos del deporte asignado.',
-      )}
-      <div class="highlight-panel">
-        <h2>Objetivo del trabajo</h2>
-        <p>
-          El alumnado debe desarrollar, explicar y presentar de forma creativa, original y didáctica los contenidos
-          asignados, vinculados al reglamento, los fundamentos técnicos o los fundamentos tácticos del deporte
-          correspondiente.
-        </p>
-      </div>
-      <div class="block-badges" aria-label="Bloques de contenido del trabajo">
-        ${contentBlocks.map((block) => `<span>${block}</span>`).join('')}
-      </div>
-      <div class="panel-grid">
-        ${cardList('Producto final', [
-          'Debe permitir comprender, enseñar y ejemplificar el contenido elegido mediante recursos visuales, interactivos o audiovisuales.',
-          `Formatos posibles: ${formats.join(', ')}.`,
-        ])}
-        ${cardList('Relación con el repositorio', [
-          'Los materiales revisados podrán incorporarse posteriormente al repositorio de la app.',
-          'Su clasificación se realizará por deporte, bloque de contenido y curso académico.',
-        ])}
-      </div>
-      <div class="guide-section">
-        <h2>Estructura mínima recomendada</h2>
-        <div class="quality-list numbered-list">
-          ${structure
-            .map(
-              (item, index) => `
-                <article>
-                  <span>${String(index + 1).padStart(2, '0')}</span>
-                  <p>${item}</p>
-                </article>
-              `,
-            )
-            .join('')}
-        </div>
-      </div>
-      <div class="guide-section">
-        <h2>Recomendaciones de calidad</h2>
-        <div class="info-card-grid">
-          ${recommendations
-            .map(
-              (recommendation) => `
-                <article class="info-card compact-card">
-                  <p>${recommendation}</p>
-                </article>
-              `,
-            )
-            .join('')}
-        </div>
       </div>
     </section>
   `;
@@ -1611,8 +1517,6 @@ function render() {
     app.innerHTML = renderObservationPage();
   } else if (route === 'uso-repositorio') {
     app.innerHTML = renderRepositoryUse();
-  } else if (route === 'guia-trabajo') {
-    app.innerHTML = renderWorkGuide();
   } else if (route === 'uso-ia') {
     app.innerHTML = renderResponsibleAi();
   } else if (route === 'incorporacion') {
