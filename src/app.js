@@ -7,6 +7,10 @@ let filters = { sport: 'Todos', block: 'Todos', academicYear: 'Todos' };
 const initialMainTaskLabels = ['Tarea 1', 'Tarea 2', 'Tarea 3'];
 
 let sessionDesignerState = createEmptySessionState();
+let observationState = createEmptyObservationState();
+
+const OBSERVATION_ENDPOINT = '';
+const OBSERVATION_DRAFT_KEY = 'deportes-colectivos-cafd-observation-draft';
 
 const navItems = [
   { id: 'inicio', label: 'Inicio' },
@@ -14,6 +18,7 @@ const navItems = [
   { id: 'uso-repositorio', label: 'Uso del repositorio' },
   { id: 'guia-trabajo', label: 'Guía del trabajo' },
   { id: 'uso-ia', label: 'Uso responsable de IA' },
+  { id: 'observacion-partido', label: 'Observación de partido' },
   { id: 'diseno-sesion', label: 'Diseño de sesión' },
 ];
 
@@ -995,6 +1000,481 @@ function bindSessionDesignerInteractions() {
   document.querySelector('[data-clear-session]')?.addEventListener('click', clearSessionForm);
 }
 
+
+const countOptions = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10 o más'];
+const selfAssessmentOptions = ['Sí', 'No', 'No preguntado / No responde'];
+const checklistAgents = [
+  ['players', 'Jugadores'],
+  ['coachingStaff', 'Cuerpo técnico / entrenadores'],
+  ['spectators', 'Espectadores / padres'],
+];
+const aggressionTypes = [
+  ['verbal', 'Agresión verbal'],
+  ['gestural', 'Agresión gestual'],
+  ['physical', 'Agresión física'],
+];
+const refereeQuestions = [
+  ['pressuredByPlayers', '¿Te has sentido presionado por los jugadores?'],
+  ['nerves', '¿Has sufrido nervios en algún momento?'],
+  ['playerAttitudeConditionedDecisions', '¿Ha condicionado la actitud de los jugadores alguna de tus decisiones?'],
+  ['scoreConditionedDecisions', '¿Ha condicionado el resultado provisional alguna de tus decisiones?'],
+  ['verbalAggression', '¿Has sufrido algún tipo de agresión verbal?'],
+  ['gesturalAggression', '¿Has sufrido algún tipo de agresión gestual?'],
+  ['physicalAggression', '¿Has sufrido algún tipo de agresión física?'],
+  ['treatedWithRespect', '¿Te han tratado con respeto?'],
+  ['feltSafe', '¿Te has sentido seguro?'],
+  ['sportsmanship', '¿Se han comportado de forma deportiva?'],
+  ['supportedByPlayers', '¿Te has sentido apoyado por los jugadores?'],
+];
+
+function createEmptyChecklistAgent() {
+  return { verbal: '0', gestural: '0', physical: '0', observations: '' };
+}
+
+function createEmptyObservationState() {
+  return {
+    observers: { student1: '', student2: '', group: '', academicYear: '', email: '' },
+    matchContext: {
+      sport: 'Voleibol',
+      date: '',
+      time: '',
+      location: '',
+      homeTeam: '',
+      awayTeam: '',
+      gender: '',
+      category: '',
+      approximateAge: '',
+      competitiveLevel: '',
+      spectators: '',
+      finalScore: '',
+      photoLink: '',
+    },
+    qualitative: {
+      matchSummary: '',
+      spectatorBehavior: '',
+      playerBehavior: '',
+      coachingBehavior: '',
+      personalReflection: '',
+      conclusions: '',
+      improvementProposals: '',
+    },
+    behavioralChecklist: {
+      players: createEmptyChecklistAgent(),
+      coachingStaff: createEmptyChecklistAgent(),
+      spectators: createEmptyChecklistAgent(),
+    },
+    refereeSelfAssessment: {
+      pressuredByPlayers: '',
+      nerves: '',
+      playerAttitudeConditionedDecisions: '',
+      scoreConditionedDecisions: '',
+      verbalAggression: '',
+      gesturalAggression: '',
+      physicalAggression: '',
+      treatedWithRespect: '',
+      feltSafe: '',
+      sportsmanship: '',
+      supportedByPlayers: '',
+      additionalComments: '',
+    },
+  };
+}
+
+function observationInput(path, label, type = 'text', options = {}) {
+  const value = path.split('.').reduce((acc, key) => acc?.[key], observationState) ?? '';
+  const help = options.help ? `<small>${options.help}</small>` : '';
+  return `
+    <label class="form-field observation-field">
+      <span>${label}</span>
+      <input type="${type}" data-observation-field="${path}" value="${escapeHtml(value)}" ${options.placeholder ? `placeholder="${escapeHtml(options.placeholder)}"` : ''}>
+      ${help}
+    </label>
+  `;
+}
+
+function observationSelect(path, label, values, options = {}) {
+  const value = path.split('.').reduce((acc, key) => acc?.[key], observationState) ?? '';
+  const help = options.help ? `<small>${options.help}</small>` : '';
+  return `
+    <label class="form-field observation-field">
+      <span>${label}</span>
+      <select data-observation-field="${path}">
+        ${values.map((item) => `<option value="${escapeHtml(item)}" ${item === value ? 'selected' : ''}>${escapeHtml(item || 'Seleccionar')}</option>`).join('')}
+      </select>
+      ${help}
+    </label>
+  `;
+}
+
+function observationTextarea(path, label, help = '', rows = 5) {
+  const value = path.split('.').reduce((acc, key) => acc?.[key], observationState) ?? '';
+  return `
+    <label class="form-field observation-field observation-textarea">
+      <span>${label}</span>
+      ${help ? `<small>${help}</small>` : ''}
+      <textarea data-observation-field="${path}" rows="${rows}">${escapeHtml(value)}</textarea>
+    </label>
+  `;
+}
+
+function setNestedValue(target, path, value) {
+  const keys = path.split('.');
+  const last = keys.pop();
+  const parent = keys.reduce((acc, key) => acc[key], target);
+  parent[last] = value;
+}
+
+function readObservationForm() {
+  document.querySelectorAll('[data-observation-field]').forEach((field) => {
+    setNestedValue(observationState, field.dataset.observationField, field.value);
+  });
+}
+
+function observationSection(title, helper, content, open = false) {
+  return `
+    <details class="form-section observation-section" ${open ? 'open' : ''}>
+      <summary>
+        <span>${title}</span>
+        <small>${helper}</small>
+      </summary>
+      <div class="observation-section-body">${content}</div>
+    </details>
+  `;
+}
+
+function renderChecklistEditor() {
+  return `
+    <div class="checklist-help">
+      <p><strong>Agresión verbal:</strong> insultos, amenazas, menosprecios o protestas ofensivas hacia el árbitro.</p>
+      <p><strong>Agresión gestual:</strong> gestos despectivos, aspavientos, miradas intimidatorias o señales de desaprobación ofensiva.</p>
+      <p><strong>Agresión física:</strong> empujones, intentos de agresión, invasión amenazante del espacio arbitral o contacto físico intimidatorio.</p>
+    </div>
+    <div class="mobile-table-wrap">
+      <table class="observation-table checklist-table">
+        <thead><tr><th>Agente</th>${aggressionTypes.map(([, label]) => `<th>${label}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${checklistAgents.map(([agentKey, agentLabel]) => `
+            <tr>
+              <th scope="row">${agentLabel}</th>
+              ${aggressionTypes.map(([typeKey, typeLabel]) => `
+                <td data-label="${typeLabel}">
+                  <select aria-label="${agentLabel}: ${typeLabel}" data-observation-field="behavioralChecklist.${agentKey}.${typeKey}">
+                    ${countOptions.map((option) => `<option value="${option}" ${observationState.behavioralChecklist[agentKey][typeKey] === option ? 'selected' : ''}>${option}</option>`).join('')}
+                  </select>
+                </td>`).join('')}
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="form-grid">
+      ${observationTextarea('behavioralChecklist.players.observations', 'Observaciones sobre jugadores', '', 3)}
+      ${observationTextarea('behavioralChecklist.coachingStaff.observations', 'Observaciones sobre cuerpo técnico / entrenadores', '', 3)}
+      ${observationTextarea('behavioralChecklist.spectators.observations', 'Observaciones sobre espectadores / padres', '', 3)}
+    </div>
+  `;
+}
+
+function renderRefereeSelfAssessmentEditor() {
+  return `
+    <p class="section-help">Estas preguntas deben realizarse al árbitro al finalizar el encuentro, siempre que sea posible y de forma respetuosa.</p>
+    <div class="mobile-table-wrap">
+      <table class="observation-table self-assessment-table">
+        <thead><tr><th>Pregunta</th><th>Respuesta</th></tr></thead>
+        <tbody>
+          ${refereeQuestions.map(([key, question], index) => `
+            <tr>
+              <th scope="row">${index + 1}. ${question}</th>
+              <td data-label="Respuesta">
+                <select aria-label="${question}" data-observation-field="refereeSelfAssessment.${key}">
+                  <option value="">Seleccionar</option>
+                  ${selfAssessmentOptions.map((option) => `<option value="${option}" ${observationState.refereeSelfAssessment[key] === option ? 'selected' : ''}>${option}</option>`).join('')}
+                </select>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${observationTextarea('refereeSelfAssessment.additionalComments', 'Comentarios adicionales del árbitro', '', 3)}
+  `;
+}
+
+function renderObservationPage() {
+  return `
+    <section class="page-section observation-page">
+      ${pageIntro(
+        'Registro de campo · Categorías formativas',
+        'Observación de partido en categorías formativas',
+        'El módulo de observación de partido permite registrar información durante un encuentro de categoría formativa, prestando especial atención a las agresiones verbales, gestuales o físicas dirigidas hacia la figura arbitral. La herramienta permite guardar un borrador en el navegador, generar un informe de apoyo para el trabajo y enviar al profesor los datos estructurados de la checklist conductual y la autoevaluación del árbitro.',
+      )}
+      <div class="observation-layout">
+        <form id="observation-form" class="session-form observation-form">
+          <div class="callout-panel local-storage-warning">
+            <h2>Guardado local en este dispositivo</h2>
+            <p>El borrador se guarda en el navegador/dispositivo utilizado mediante localStorage. Si rellenas la información en el móvil, deberás descargar o copiar el informe desde ese mismo dispositivo, o utilizar el mismo navegador si quieres recuperar el borrador posteriormente.</p>
+          </div>
+          ${observationSection('1. Datos del alumnado observador', 'Identificación mínima del registro observacional.', `
+            <p class="section-help">El trabajo se realiza preferentemente por parejas. Estos datos permiten identificar el registro observacional.</p>
+            <div class="form-grid two-columns">
+              ${observationInput('observers.student1', 'Nombre y apellidos del alumno/a 1')}
+              ${observationInput('observers.student2', 'Nombre y apellidos del alumno/a 2')}
+              ${observationInput('observers.group', 'Grupo de prácticas')}
+              ${observationInput('observers.academicYear', 'Curso académico')}
+              ${observationInput('observers.email', 'Correo de contacto, opcional', 'email')}
+            </div>
+          `, true)}
+          ${observationSection('2. Contextualización del partido', 'Datos básicos del encuentro observado.', `
+            <div class="form-grid two-columns">
+              ${observationSelect('matchContext.sport', 'Deporte', ['Voleibol', 'Baloncesto', 'Balonmano', 'Fútbol'])}
+              ${observationInput('matchContext.date', 'Fecha del partido', 'date')}
+              ${observationInput('matchContext.time', 'Hora del partido', 'time')}
+              ${observationInput('matchContext.location', 'Lugar o instalación')}
+              ${observationInput('matchContext.homeTeam', 'Equipo local')}
+              ${observationInput('matchContext.awayTeam', 'Equipo visitante')}
+              ${observationSelect('matchContext.gender', 'Género', ['', 'Masculino', 'Femenino', 'Mixto'])}
+              ${observationSelect('matchContext.category', 'Categoría', ['', 'Benjamín', 'Alevín', 'Infantil', 'Cadete', 'Juvenil', 'Otra'])}
+              ${observationInput('matchContext.approximateAge', 'Edad aproximada')}
+              ${observationInput('matchContext.competitiveLevel', 'Nivel competitivo, si procede')}
+              ${observationInput('matchContext.spectators', 'Número aproximado de espectadores', 'number')}
+              ${observationInput('matchContext.finalScore', 'Resultado final, si se conoce')}
+              ${observationInput('matchContext.photoLink', 'Enlace a foto demostrativa de asistencia al partido', 'url', { help: 'No se suben imágenes a la app. Añade un enlace a Drive, Moodle u otro recurso si procede.' })}
+            </div>
+          `)}
+          ${observationSection('3. Registro cualitativo para el trabajo del alumno', 'Se guarda y aparece en el informe, pero no se envía al profesor.', `
+            <div class="form-grid">
+              ${observationTextarea('qualitative.matchSummary', 'Resumen cualitativo del partido', 'Describe brevemente el contexto general del encuentro, el clima del partido, el comportamiento global de los participantes y cualquier circunstancia relevante para interpretar la observación.')}
+              ${observationTextarea('qualitative.spectatorBehavior', 'Comportamiento de padres/espectadores', 'Analiza tipos de padres o espectadores en la grada, conducta durante el partido, comentarios dirigidos a niños/as, entrenadores o árbitro, ubicación, lenguaje corporal, manifestación emocional e influencia del marcador.')}
+              ${observationTextarea('qualitative.playerBehavior', 'Comportamiento de jugadores/as', 'Analiza conductas y comportamientos, expresiones mostradas, influencia del entrenador, influencia de los padres/espectadores y respuesta ante decisiones arbitrales.')}
+              ${observationTextarea('qualitative.coachingBehavior', 'Comportamiento del entrenador/cuerpo técnico', 'Analiza gestión de la competición, reparto de minutos o roles, expresiones mostradas, tipos de feedback, relación con el árbitro e influencia de los padres/espectadores.')}
+              ${observationTextarea('qualitative.personalReflection', 'Opinión/reflexión personal')}
+              ${observationTextarea('qualitative.conclusions', 'Conclusiones principales')}
+              ${observationTextarea('qualitative.improvementProposals', 'Propuestas de mejora o intervención educativa')}
+            </div>
+          `)}
+          ${observationSection('4. Checklist conductual de agresiones hacia el árbitro', 'Registro rápido por agente y tipo de conducta.', renderChecklistEditor())}
+          ${observationSection('5. Autoevaluación del árbitro', 'Preguntas cerradas al árbitro al finalizar el partido.', renderRefereeSelfAssessmentEditor())}
+          <div class="form-actions sticky-actions">
+            <button type="button" data-save-observation>Guardar borrador</button>
+            <button type="button" class="secondary" data-load-observation>Cargar borrador guardado</button>
+            <button type="button" class="secondary" data-delete-observation>Borrar borrador</button>
+            <button type="button" data-copy-observation>Copiar informe</button>
+            <button type="button" data-download-observation>Descargar informe en Word</button>
+            <button type="button" data-submit-observation>Enviar registro observacional al profesor</button>
+            <button type="button" class="secondary" data-clear-observation>Limpiar formulario</button>
+          </div>
+          <p id="observation-status" class="copy-status" role="status" aria-live="polite"></p>
+        </form>
+        <aside class="info-panel observation-preview-panel">
+          <div class="preview-heading">
+            <p class="eyebrow">Vista previa</p>
+            <h2>Informe de apoyo</h2>
+          </div>
+          <div id="observation-preview" class="observation-sheet">${observationReportHtml(observationState, true)}</div>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
+function observationReportSections(state) {
+  const checklistRows = checklistAgents.flatMap(([agentKey, agentLabel]) =>
+    aggressionTypes.map(([typeKey, typeLabel]) => [`${agentLabel} · ${typeLabel}`, state.behavioralChecklist[agentKey][typeKey]]),
+  );
+  const refereeRows = refereeQuestions.map(([key, question], index) => [`${index + 1}. ${question}`, state.refereeSelfAssessment[key]]);
+  return [
+    ['Datos del alumnado observador', [
+      ['Alumno/a 1', state.observers.student1], ['Alumno/a 2', state.observers.student2], ['Grupo de prácticas', state.observers.group], ['Curso académico', state.observers.academicYear], ['Correo de contacto', state.observers.email],
+    ]],
+    ['Contextualización del partido', [
+      ['Deporte', state.matchContext.sport], ['Fecha', state.matchContext.date], ['Hora', state.matchContext.time], ['Lugar o instalación', state.matchContext.location], ['Equipo local', state.matchContext.homeTeam], ['Equipo visitante', state.matchContext.awayTeam], ['Género', state.matchContext.gender], ['Categoría', state.matchContext.category], ['Edad aproximada', state.matchContext.approximateAge], ['Nivel competitivo', state.matchContext.competitiveLevel], ['N.º aproximado de espectadores', state.matchContext.spectators], ['Resultado final', state.matchContext.finalScore], ['Enlace a foto demostrativa', state.matchContext.photoLink],
+    ]],
+    ['Resumen cualitativo', [['Resumen cualitativo del partido', state.qualitative.matchSummary]]],
+    ['Checklist conductual', [...checklistRows, ['Observaciones sobre jugadores', state.behavioralChecklist.players.observations], ['Observaciones sobre cuerpo técnico / entrenadores', state.behavioralChecklist.coachingStaff.observations], ['Observaciones sobre espectadores / padres', state.behavioralChecklist.spectators.observations]]],
+    ['Autoevaluación del árbitro', [...refereeRows, ['Comentarios adicionales del árbitro', state.refereeSelfAssessment.additionalComments]]],
+    ['Análisis cualitativo por agentes', [['Comportamiento de padres/espectadores', state.qualitative.spectatorBehavior], ['Comportamiento de jugadores/as', state.qualitative.playerBehavior], ['Comportamiento del entrenador/cuerpo técnico', state.qualitative.coachingBehavior]]],
+    ['Reflexión y conclusiones', [['Opinión/reflexión personal', state.qualitative.personalReflection], ['Conclusiones principales', state.qualitative.conclusions]]],
+    ['Propuestas de mejora', [['Propuestas de mejora o intervención educativa', state.qualitative.improvementProposals]]],
+  ];
+}
+
+function observationReportHtml(state, includeFallback = false) {
+  const fallback = includeFallback ? 'Sin completar' : '';
+  const sections = observationReportSections(state);
+  return `
+    <header><span>Deportes Colectivos CAFD</span><h3>Informe de observación de partido</h3></header>
+    ${sections.map(([title, rows], index) => {
+      const visibleRows = includeFallback ? rows : rows.filter(([, value]) => String(value ?? '').trim());
+      if (!visibleRows.length) return '';
+      return `<section><h4>${index + 1}. ${title}</h4><dl>${visibleRows.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${nl2br(String(value || fallback))}</dd></div>`).join('')}</dl></section>`;
+    }).join('')}
+  `;
+}
+
+function observationReportText(state) {
+  return ['Informe de observación de partido', 'Deportes Colectivos CAFD', '']
+    .concat(observationReportSections(state).flatMap(([title, rows], index) => {
+      const visibleRows = rows.filter(([, value]) => String(value ?? '').trim());
+      if (!visibleRows.length) return [];
+      return [`${index + 1}. ${title}`, ...visibleRows.map(([label, value]) => `${label}: ${value}`), ''];
+    })).join('\n');
+}
+
+function observationWordHtml(state) {
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Informe de observación de partido</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #1f3129; font-size: 11pt; line-height: 1.35; }
+    h1 { color: #123326; font-size: 20pt; margin: 0 0 2pt; }
+    h2 { color: #123326; border-bottom: 1pt solid #d9e4df; font-size: 13pt; margin: 14pt 0 6pt; padding-bottom: 3pt; }
+    .subtitle { color: #47645a; font-weight: bold; margin: 0 0 12pt; text-transform: uppercase; }
+    table { border-collapse: collapse; margin-bottom: 8pt; width: 100%; }
+    th, td { border: 1pt solid #d9e4df; padding: 5pt; vertical-align: top; }
+    th { background: #edf5f1; color: #123326; width: 32%; }
+  </style></head><body><h1>Informe de observación de partido</h1><p class="subtitle">Deportes Colectivos CAFD</p>
+  ${observationReportSections(state).map(([title, rows], index) => {
+    const visibleRows = rows.filter(([, value]) => String(value ?? '').trim());
+    if (!visibleRows.length) return '';
+    return `<h2>${index + 1}. ${escapeHtml(title)}</h2><table>${visibleRows.map(([label, value]) => `<tr><th>${escapeHtml(label)}</th><td>${wordMultiline(String(value))}</td></tr>`).join('')}</table>`;
+  }).join('')}<p>Documento editable generado desde la herramienta Observación de partido de Deportes Colectivos CAFD.</p></body></html>`;
+}
+
+function observationWordFilename(state) {
+  const date = slugifyFilePart(state.matchContext.date);
+  const teams = slugifyFilePart(`${state.matchContext.homeTeam}-${state.matchContext.awayTeam}`);
+  return `informe-observacion-partido-${[date, teams].filter(Boolean).join('-') || 'deportes-colectivos'}.doc`;
+}
+
+function observationSubmissionPayload(state) {
+  return {
+    submittedAt: new Date().toISOString(),
+    observers: { ...state.observers },
+    matchContext: {
+      sport: state.matchContext.sport,
+      date: state.matchContext.date,
+      time: state.matchContext.time,
+      location: state.matchContext.location,
+      homeTeam: state.matchContext.homeTeam,
+      awayTeam: state.matchContext.awayTeam,
+      gender: state.matchContext.gender,
+      category: state.matchContext.category,
+      approximateAge: state.matchContext.approximateAge,
+      competitiveLevel: state.matchContext.competitiveLevel,
+      spectators: state.matchContext.spectators,
+      finalScore: state.matchContext.finalScore,
+    },
+    behavioralChecklist: JSON.parse(JSON.stringify(state.behavioralChecklist)),
+    refereeSelfAssessment: { ...state.refereeSelfAssessment },
+  };
+}
+
+function refreshObservationPreview() {
+  readObservationForm();
+  const preview = document.querySelector('#observation-preview');
+  if (preview) preview.innerHTML = observationReportHtml(observationState, true);
+}
+
+function setObservationStatus(message) {
+  const status = document.querySelector('#observation-status');
+  if (status) status.textContent = message;
+}
+
+function saveObservationDraft() {
+  refreshObservationPreview();
+  localStorage.setItem(OBSERVATION_DRAFT_KEY, JSON.stringify(observationState));
+  setObservationStatus('Borrador guardado en este navegador.');
+}
+
+function loadObservationDraft() {
+  const saved = localStorage.getItem(OBSERVATION_DRAFT_KEY);
+  if (!saved) {
+    setObservationStatus('No hay ningún borrador guardado en este navegador.');
+    return;
+  }
+  observationState = { ...createEmptyObservationState(), ...JSON.parse(saved) };
+  rerenderObservationPage();
+  setObservationStatus('Borrador cargado correctamente.');
+}
+
+function deleteObservationDraft() {
+  if (!window.confirm('¿Quieres borrar el borrador guardado en este navegador?')) return;
+  localStorage.removeItem(OBSERVATION_DRAFT_KEY);
+  setObservationStatus('Borrador eliminado de este navegador.');
+}
+
+async function copyObservationReport() {
+  refreshObservationPreview();
+  const text = observationReportText(observationState);
+  try {
+    await navigator.clipboard.writeText(text);
+    setObservationStatus('Informe copiado al portapapeles.');
+  } catch {
+    const textarea = document.createElement('textarea');
+    textarea.className = 'manual-copy-field';
+    textarea.value = text;
+    document.body.append(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    textarea.remove();
+    setObservationStatus('Informe copiado al portapapeles.');
+  }
+}
+
+function downloadObservationWord() {
+  refreshObservationPreview();
+  const blob = new Blob(['\ufeff', observationWordHtml(observationState)], { type: 'application/msword;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = observationWordFilename(observationState);
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 0);
+  setObservationStatus('Informe en Word descargado.');
+}
+
+async function submitObservationRecord() {
+  refreshObservationPreview();
+  if (!OBSERVATION_ENDPOINT) {
+    setObservationStatus('El envío directo todavía no está configurado. Puedes guardar el borrador, copiar el informe o descargarlo en Word para trabajar posteriormente.');
+    return;
+  }
+  try {
+    const response = await fetch(OBSERVATION_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(observationSubmissionPayload(observationState)),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    setObservationStatus('Registro observacional enviado correctamente al profesor.');
+  } catch (error) {
+    setObservationStatus(`No se ha podido enviar el registro observacional: ${error.message}`);
+  }
+}
+
+function clearObservationForm() {
+  observationState = createEmptyObservationState();
+  rerenderObservationPage();
+  setObservationStatus('Formulario limpiado. El borrador guardado no se ha borrado.');
+}
+
+function rerenderObservationPage() {
+  app.innerHTML = renderObservationPage();
+  bindInteractions();
+  bindObservationInteractions();
+}
+
+function bindObservationInteractions() {
+  const form = document.querySelector('#observation-form');
+  if (!form) return;
+  form.addEventListener('input', refreshObservationPreview);
+  form.addEventListener('change', refreshObservationPreview);
+  document.querySelector('[data-save-observation]')?.addEventListener('click', saveObservationDraft);
+  document.querySelector('[data-load-observation]')?.addEventListener('click', loadObservationDraft);
+  document.querySelector('[data-delete-observation]')?.addEventListener('click', deleteObservationDraft);
+  document.querySelector('[data-copy-observation]')?.addEventListener('click', copyObservationReport);
+  document.querySelector('[data-download-observation]')?.addEventListener('click', downloadObservationWord);
+  document.querySelector('[data-submit-observation]')?.addEventListener('click', submitObservationRecord);
+  document.querySelector('[data-clear-observation]')?.addEventListener('click', clearObservationForm);
+}
+
 function renderResponsibleAi() {
   const suitableUses = [
     'Organizar ideas iniciales.',
@@ -1127,6 +1607,8 @@ function render() {
     app.innerHTML = renderRepository();
   } else if (route === 'diseno-sesion') {
     app.innerHTML = renderSessionDesigner();
+  } else if (route === 'observacion-partido') {
+    app.innerHTML = renderObservationPage();
   } else if (route === 'uso-repositorio') {
     app.innerHTML = renderRepositoryUse();
   } else if (route === 'guia-trabajo') {
@@ -1141,6 +1623,7 @@ function render() {
 
   bindInteractions();
   bindSessionDesignerInteractions();
+  bindObservationInteractions();
   app.focus({ preventScroll: true });
 }
 
