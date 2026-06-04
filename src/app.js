@@ -9,7 +9,7 @@ const initialMainTaskLabels = ['Tarea 1', 'Tarea 2', 'Tarea 3'];
 let sessionDesignerState = createEmptySessionState();
 let observationState = createEmptyObservationState();
 
-const OBSERVATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx36_gY9fip3pHuwpiY_8IEo583K6c8OOikbf6VG9dq5oLWtG2Iz2MIVma5OxRXp5n1ew/exec';
+const OBSERVATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzIbQ_MqEEqgZx6Vfjf8gx1WsjMkl0-6zx4_l8JSDsoeX3z_o9VvfRVLj7BU95Rngzo8A/exec';
 const OBSERVATION_DRAFT_KEY = 'deportes-colectivos-cafd-observation-draft';
 
 const navItems = [
