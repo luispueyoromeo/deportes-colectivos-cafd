@@ -29,6 +29,8 @@ function academicYearsFrom(items) {
 function createEmptySessionState(mainTaskLabels = initialMainTaskLabels) {
   return {
     general: {
+      date: '',
+      sessionNumber: '',
       sport: 'Voleibol',
       title: '',
       group: '',
@@ -460,6 +462,8 @@ function renderSessionDesigner() {
           <section class="form-section">
             <h2>1. Datos generales</h2>
             <div class="form-grid two-columns">
+              ${fieldControl('Fecha', 'general-date', sessionDesignerState.general.date, 'date')}
+              ${fieldControl('Número de sesión', 'general-sessionNumber', sessionDesignerState.general.sessionNumber, 'number')}
               <label class="form-field">
                 <span>Deporte</span>
                 <select name="general-sport">
@@ -562,6 +566,8 @@ function readSessionForm() {
   if (!form) return;
   const data = new FormData(form);
   sessionDesignerState.general = {
+    date: data.get('general-date') || '',
+    sessionNumber: data.get('general-sessionNumber') || '',
     sport: data.get('general-sport') || 'Voleibol',
     title: data.get('general-title') || '',
     group: data.get('general-group') || '',
@@ -613,6 +619,8 @@ function sessionPreviewHtml(state) {
         <h3>${escapeHtml(filledValue(state.general.title, 'Título de la sesión'))}</h3>
       </header>
       <dl class="session-meta">
+        <div><dt>Fecha</dt><dd>${escapeHtml(filledValue(state.general.date))}</dd></div>
+        <div><dt>Número de sesión</dt><dd>${escapeHtml(filledValue(state.general.sessionNumber))}</dd></div>
         <div><dt>Curso o grupo</dt><dd>${escapeHtml(filledValue(state.general.group))}</dd></div>
         <div><dt>Duración</dt><dd>${escapeHtml(filledValue(state.general.duration))}</dd></div>
         <div><dt>Alumnado</dt><dd>${escapeHtml(filledValue(state.general.students))}</dd></div>
@@ -678,6 +686,8 @@ function sessionPlainText(state) {
     'DISEÑO DE SESIÓN PRÁCTICA',
     '',
     'DATOS GENERALES',
+    `Fecha: ${filledValue(state.general.date)}`,
+    `Número de sesión: ${filledValue(state.general.sessionNumber)}`,
     `Deporte: ${filledValue(state.general.sport)}`,
     `Título de la sesión: ${filledValue(state.general.title)}`,
     `Curso o grupo: ${filledValue(state.general.group)}`,
@@ -823,16 +833,22 @@ function sessionWordHtml(state) {
 
   <table class="meta-table">
     <tr>
-      <th>Deporte</th><th>Título de la sesión</th><th>Curso o grupo</th>
+      <th>Fecha</th><th>Número de sesión</th><th>Deporte</th>
     </tr>
     <tr>
-      <td>${wordText(state.general.sport)}</td><td>${wordText(state.general.title, 'Título de la sesión')}</td><td>${wordText(state.general.group)}</td>
+      <td>${wordText(state.general.date)}</td><td>${wordText(state.general.sessionNumber)}</td><td>${wordText(state.general.sport)}</td>
     </tr>
     <tr>
-      <th>Duración estimada</th><th>N.º aproximado de alumnos</th><th>Espacio disponible</th>
+      <th>Título de la sesión</th><th>Curso o grupo</th><th>Duración estimada</th>
     </tr>
     <tr>
-      <td>${wordText(state.general.duration)}</td><td>${wordText(state.general.students)}</td><td>${wordText(state.general.space)}</td>
+      <td>${wordText(state.general.title, 'Título de la sesión')}</td><td>${wordText(state.general.group)}</td><td>${wordText(state.general.duration)}</td>
+    </tr>
+    <tr>
+      <th>N.º aproximado de alumnos</th><th>Espacio disponible</th><th></th>
+    </tr>
+    <tr>
+      <td>${wordText(state.general.students)}</td><td>${wordText(state.general.space)}</td><td></td>
     </tr>
     <tr>
       <th colspan="3">Material necesario</th>
