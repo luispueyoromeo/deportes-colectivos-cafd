@@ -667,3 +667,249 @@ dd {
     width: 100%;
   }
 }
+
+.session-layout {
+  align-items: start;
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
+  margin-top: 1.5rem;
+}
+
+.session-form,
+.session-preview-panel,
+.form-section,
+.task-editor,
+.session-sheet,
+.session-task {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 1.4rem;
+  box-shadow: 0 10px 28px rgba(18, 51, 38, 0.06);
+}
+
+.session-form {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.35rem);
+}
+
+.form-section {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.25rem);
+}
+
+.form-section h2,
+.form-section-heading h2,
+.preview-heading h2 {
+  margin-bottom: 0;
+}
+
+.form-section-heading,
+.form-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.two-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-field {
+  color: var(--green-900);
+  display: grid;
+  font-size: 0.86rem;
+  font-weight: 800;
+  gap: 0.45rem;
+}
+
+input,
+textarea {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  color: #263a32;
+  font: inherit;
+  min-height: 2.7rem;
+  padding: 0.75rem 0.85rem;
+  width: 100%;
+}
+
+textarea {
+  line-height: 1.5;
+  min-height: 7rem;
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--green-700);
+  box-shadow: 0 0 0 3px rgba(29, 95, 72, 0.14);
+  outline: none;
+}
+
+.task-editor-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.task-editor {
+  display: grid;
+  gap: 0.85rem;
+  padding: clamp(1rem, 3vw, 1.15rem);
+}
+
+.task-editor-heading .eyebrow {
+  margin-bottom: 0.25rem;
+}
+
+.task-editor-heading h3 {
+  margin-bottom: 0;
+}
+
+.copy-status {
+  color: var(--green-700);
+  font-weight: 800;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.manual-copy-field {
+  left: -9999px;
+  position: fixed;
+  top: 0;
+}
+
+.session-preview-panel {
+  padding: clamp(1rem, 3vw, 1.35rem);
+  position: sticky;
+  top: 6.5rem;
+}
+
+.preview-heading {
+  margin-bottom: 1rem;
+}
+
+.session-sheet {
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.session-sheet header {
+  background: linear-gradient(135deg, var(--green-900), var(--blue));
+  color: #fff;
+  padding: 1.15rem;
+}
+
+.session-sheet header span {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 850;
+  margin-bottom: 0.7rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.session-sheet header h3 {
+  color: #fff;
+  margin-bottom: 0;
+}
+
+.session-sheet section,
+.session-meta {
+  border-bottom: 1px solid var(--line);
+  margin: 0;
+  padding: 1rem 1.15rem;
+}
+
+.session-sheet section:last-child {
+  border-bottom: 0;
+}
+
+.session-sheet h4 {
+  color: var(--green-900);
+  font-size: 1rem;
+  margin: 0 0 0.7rem;
+}
+
+.session-sheet h5 {
+  color: var(--green-900);
+  font-size: 1rem;
+  margin: 0.2rem 0 0.55rem;
+}
+
+.session-sheet p {
+  color: #2b4138;
+  line-height: 1.55;
+  margin-bottom: 0.55rem;
+}
+
+.session-sheet p:last-child {
+  margin-bottom: 0;
+}
+
+.session-meta {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.session-task-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.session-task {
+  box-shadow: none;
+  padding: 0.85rem;
+}
+
+.session-task span {
+  color: var(--green-700);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1100px) {
+  .session-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .session-preview-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 680px) {
+  .session-form,
+  .session-preview-panel,
+  .form-section,
+  .task-editor,
+  .session-sheet,
+  .session-task {
+    border-radius: 1.1rem;
+  }
+
+  .two-columns,
+  .session-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions button,
+  .form-section-heading button {
+    width: 100%;
+  }
+}

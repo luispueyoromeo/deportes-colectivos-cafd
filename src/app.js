@@ -4,9 +4,20 @@ const app = document.querySelector('#app');
 const nav = document.querySelector('#main-nav');
 let filters = { sport: 'Todos', block: 'Todos', academicYear: 'Todos' };
 
+const initialSessionTasks = [
+  'Activación o calentamiento',
+  'Tarea 1',
+  'Tarea 2',
+  'Tarea 3',
+  'Vuelta a la calma o cierre reflexivo',
+];
+
+let sessionDesignerState = createEmptySessionState();
+
 const navItems = [
   { id: 'inicio', label: 'Inicio' },
   { id: 'repositorio', label: 'Repositorio' },
+  { id: 'diseno-sesion', label: 'Diseño de sesión' },
   { id: 'uso-repositorio', label: 'Uso del repositorio' },
   { id: 'guia-trabajo', label: 'Guía del trabajo' },
   { id: 'uso-ia', label: 'Uso responsable de IA' },
@@ -18,6 +29,60 @@ function sportName(slug) {
 
 function academicYearsFrom(items) {
   return [...new Set(items.map((resource) => resource.academicYear))].sort().reverse();
+}
+
+
+function createEmptySessionState(taskLabels = initialSessionTasks) {
+  return {
+    general: {
+      sport: 'Voleibol',
+      title: '',
+      group: '',
+      duration: '',
+      students: '',
+      space: '',
+      materials: '',
+    },
+    objectives: {
+      main: '',
+      specific: '',
+      contents: '',
+    },
+    tasks: taskLabels.map((label) => createEmptyTask(label)),
+    evaluation: {
+      finalComment: '',
+      improvements: '',
+    },
+  };
+}
+
+function createEmptyTask(label) {
+  return {
+    label,
+    name: '',
+    description: '',
+    organization: '',
+    rules: '',
+    variants: '',
+    sketch: '',
+  };
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function filledValue(value, fallback = 'Pendiente de completar') {
+  return value.trim() || fallback;
+}
+
+function nl2br(value) {
+  return escapeHtml(filledValue(value)).replaceAll('\n', '<br>');
 }
 
 function setRoute(route) {
@@ -340,6 +405,314 @@ function renderWorkGuide() {
   `;
 }
 
+
+function fieldControl(label, name, value, type = 'text', placeholder = '') {
+  return `
+    <label class="form-field">
+      <span>${label}</span>
+      <input type="${type}" name="${name}" value="${escapeHtml(value)}" placeholder="${placeholder}" />
+    </label>
+  `;
+}
+
+function textareaControl(label, name, value, placeholder = '') {
+  return `
+    <label class="form-field">
+      <span>${label}</span>
+      <textarea name="${name}" rows="4" placeholder="${placeholder}">${escapeHtml(value)}</textarea>
+    </label>
+  `;
+}
+
+function taskEditor(task, index) {
+  return `
+    <article class="task-editor">
+      <div class="task-editor-heading">
+        <p class="eyebrow">${task.label}</p>
+        <h3>${task.label}</h3>
+      </div>
+      <div class="form-grid two-columns">
+        ${fieldControl('Nombre de la tarea', `task-${index}-name`, task.name)}
+        ${fieldControl('Organización del grupo', `task-${index}-organization`, task.organization)}
+      </div>
+      ${textareaControl('Descripción breve', `task-${index}-description`, task.description)}
+      ${textareaControl('Reglas o consignas', `task-${index}-rules`, task.rules)}
+      ${textareaControl('Variantes o progresiones', `task-${index}-variants`, task.variants)}
+      ${textareaControl('Esquema o dibujo (si procede)', `task-${index}-sketch`, task.sketch, 'Espacio reservado para describir o incorporar posteriormente un esquema.')}
+    </article>
+  `;
+}
+
+function renderSessionDesigner() {
+  return `
+    <section class="page-section session-page">
+      ${pageIntro(
+        'Herramienta práctica',
+        'Diseño de sesión práctica',
+        'Esta herramienta permite estructurar una sesión práctica de deportes colectivos a partir de los contenidos trabajados en la asignatura. Su finalidad es ayudar al alumnado a organizar objetivos, tareas, materiales, variantes y criterios de observación de forma coherente.',
+      )}
+      <div class="session-layout">
+        <form id="session-form" class="session-form" aria-label="Formulario de diseño de sesión práctica">
+          <section class="form-section">
+            <h2>1. Datos generales</h2>
+            <div class="form-grid two-columns">
+              <label class="form-field">
+                <span>Deporte</span>
+                <select name="general-sport">
+                  ${['Voleibol', 'Baloncesto', 'Balonmano', 'Fútbol']
+                    .map(
+                      (sport) =>
+                        `<option value="${sport}" ${sessionDesignerState.general.sport === sport ? 'selected' : ''}>${sport}</option>`,
+                    )
+                    .join('')}
+                </select>
+              </label>
+              ${fieldControl('Título de la sesión', 'general-title', sessionDesignerState.general.title)}
+              ${fieldControl('Curso o grupo', 'general-group', sessionDesignerState.general.group)}
+              ${fieldControl('Duración estimada', 'general-duration', sessionDesignerState.general.duration)}
+              ${fieldControl('Número aproximado de alumnos', 'general-students', sessionDesignerState.general.students, 'number')}
+              ${fieldControl('Espacio disponible', 'general-space', sessionDesignerState.general.space)}
+            </div>
+            ${textareaControl('Material necesario', 'general-materials', sessionDesignerState.general.materials)}
+          </section>
+
+          <section class="form-section">
+            <h2>2. Objetivos y contenidos</h2>
+            ${textareaControl('Objetivo principal de la sesión', 'objectives-main', sessionDesignerState.objectives.main)}
+            ${textareaControl('Objetivos específicos', 'objectives-specific', sessionDesignerState.objectives.specific)}
+            ${textareaControl('Contenidos técnico-tácticos trabajados', 'objectives-contents', sessionDesignerState.objectives.contents)}
+          </section>
+
+          <section class="form-section">
+            <div class="form-section-heading">
+              <h2>3. Estructura de la sesión</h2>
+              <button class="secondary" type="button" data-add-task>Añadir tarea</button>
+            </div>
+            <div id="task-editors" class="task-editor-list">
+              ${sessionDesignerState.tasks.map((task, index) => taskEditor(task, index)).join('')}
+            </div>
+          </section>
+
+          <section class="form-section">
+            <h2>4. Evaluación y observación</h2>
+            ${textareaControl('Comentario final de la sesión', 'evaluation-finalComment', sessionDesignerState.evaluation.finalComment)}
+            ${textareaControl('Propuestas de mejora (fundamentadas)', 'evaluation-improvements', sessionDesignerState.evaluation.improvements)}
+          </section>
+
+          <div class="form-actions">
+            <button type="button" data-copy-session>Copiar sesión</button>
+            <button class="secondary" type="button" data-clear-session>Limpiar formulario</button>
+          </div>
+          <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+        </form>
+
+        <aside class="session-preview-panel" aria-label="Vista previa organizada de la sesión">
+          <div class="preview-heading">
+            <p class="eyebrow">Vista previa</p>
+            <h2>Ficha de sesión</h2>
+          </div>
+          <div id="session-preview" class="session-preview">
+            ${sessionPreviewHtml(sessionDesignerState)}
+          </div>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
+function readSessionForm() {
+  const form = document.querySelector('#session-form');
+  if (!form) return;
+  const data = new FormData(form);
+  sessionDesignerState.general = {
+    sport: data.get('general-sport') || 'Voleibol',
+    title: data.get('general-title') || '',
+    group: data.get('general-group') || '',
+    duration: data.get('general-duration') || '',
+    students: data.get('general-students') || '',
+    space: data.get('general-space') || '',
+    materials: data.get('general-materials') || '',
+  };
+  sessionDesignerState.objectives = {
+    main: data.get('objectives-main') || '',
+    specific: data.get('objectives-specific') || '',
+    contents: data.get('objectives-contents') || '',
+  };
+  sessionDesignerState.tasks = sessionDesignerState.tasks.map((task, index) => ({
+    label: task.label,
+    name: data.get(`task-${index}-name`) || '',
+    description: data.get(`task-${index}-description`) || '',
+    organization: data.get(`task-${index}-organization`) || '',
+    rules: data.get(`task-${index}-rules`) || '',
+    variants: data.get(`task-${index}-variants`) || '',
+    sketch: data.get(`task-${index}-sketch`) || '',
+  }));
+  sessionDesignerState.evaluation = {
+    finalComment: data.get('evaluation-finalComment') || '',
+    improvements: data.get('evaluation-improvements') || '',
+  };
+}
+
+function refreshSessionPreview() {
+  readSessionForm();
+  const preview = document.querySelector('#session-preview');
+  if (preview) {
+    preview.innerHTML = sessionPreviewHtml(sessionDesignerState);
+  }
+}
+
+function sessionPreviewHtml(state) {
+  return `
+    <article class="session-sheet">
+      <header>
+        <span>${escapeHtml(state.general.sport)}</span>
+        <h3>${escapeHtml(filledValue(state.general.title, 'Título de la sesión'))}</h3>
+      </header>
+      <dl class="session-meta">
+        <div><dt>Curso o grupo</dt><dd>${escapeHtml(filledValue(state.general.group))}</dd></div>
+        <div><dt>Duración</dt><dd>${escapeHtml(filledValue(state.general.duration))}</dd></div>
+        <div><dt>Alumnado</dt><dd>${escapeHtml(filledValue(state.general.students))}</dd></div>
+        <div><dt>Espacio</dt><dd>${escapeHtml(filledValue(state.general.space))}</dd></div>
+      </dl>
+      <section>
+        <h4>Material necesario</h4>
+        <p>${nl2br(state.general.materials)}</p>
+      </section>
+      <section>
+        <h4>Objetivos y contenidos</h4>
+        <p><strong>Objetivo principal:</strong> ${nl2br(state.objectives.main)}</p>
+        <p><strong>Objetivos específicos:</strong> ${nl2br(state.objectives.specific)}</p>
+        <p><strong>Contenidos técnico-tácticos:</strong> ${nl2br(state.objectives.contents)}</p>
+      </section>
+      <section>
+        <h4>Estructura de la sesión</h4>
+        <div class="session-task-list">
+          ${state.tasks
+            .map(
+              (task) => `
+                <article class="session-task">
+                  <span>${escapeHtml(task.label)}</span>
+                  <h5>${escapeHtml(filledValue(task.name, 'Nombre pendiente'))}</h5>
+                  <p><strong>Descripción:</strong> ${nl2br(task.description)}</p>
+                  <p><strong>Organización:</strong> ${nl2br(task.organization)}</p>
+                  <p><strong>Reglas o consignas:</strong> ${nl2br(task.rules)}</p>
+                  <p><strong>Variantes o progresiones:</strong> ${nl2br(task.variants)}</p>
+                  <p><strong>Esquema o dibujo:</strong> ${nl2br(task.sketch)}</p>
+                </article>
+              `,
+            )
+            .join('')}
+        </div>
+      </section>
+      <section>
+        <h4>Evaluación y observación</h4>
+        <p><strong>Comentario final:</strong> ${nl2br(state.evaluation.finalComment)}</p>
+        <p><strong>Propuestas de mejora:</strong> ${nl2br(state.evaluation.improvements)}</p>
+      </section>
+    </article>
+  `;
+}
+
+function sessionPlainText(state) {
+  const lines = [
+    'DISEÑO DE SESIÓN PRÁCTICA',
+    '',
+    'DATOS GENERALES',
+    `Deporte: ${filledValue(state.general.sport)}`,
+    `Título de la sesión: ${filledValue(state.general.title)}`,
+    `Curso o grupo: ${filledValue(state.general.group)}`,
+    `Duración estimada: ${filledValue(state.general.duration)}`,
+    `Número aproximado de alumnos: ${filledValue(state.general.students)}`,
+    `Espacio disponible: ${filledValue(state.general.space)}`,
+    `Material necesario: ${filledValue(state.general.materials)}`,
+    '',
+    'OBJETIVOS Y CONTENIDOS',
+    `Objetivo principal: ${filledValue(state.objectives.main)}`,
+    `Objetivos específicos: ${filledValue(state.objectives.specific)}`,
+    `Contenidos técnico-tácticos trabajados: ${filledValue(state.objectives.contents)}`,
+    '',
+    'ESTRUCTURA DE LA SESIÓN',
+  ];
+
+  state.tasks.forEach((task) => {
+    lines.push(
+      '',
+      task.label.toUpperCase(),
+      `Nombre de la tarea: ${filledValue(task.name)}`,
+      `Descripción breve: ${filledValue(task.description)}`,
+      `Organización del grupo: ${filledValue(task.organization)}`,
+      `Reglas o consignas: ${filledValue(task.rules)}`,
+      `Variantes o progresiones: ${filledValue(task.variants)}`,
+      `Esquema o dibujo: ${filledValue(task.sketch)}`,
+    );
+  });
+
+  lines.push(
+    '',
+    'EVALUACIÓN Y OBSERVACIÓN',
+    `Comentario final de la sesión: ${filledValue(state.evaluation.finalComment)}`,
+    `Propuestas de mejora (fundamentadas): ${filledValue(state.evaluation.improvements)}`,
+  );
+
+  return lines.join('\n');
+}
+
+async function copySessionToClipboard() {
+  refreshSessionPreview();
+  const status = document.querySelector('#copy-status');
+  const text = sessionPlainText(sessionDesignerState);
+
+  try {
+    if (!navigator.clipboard?.writeText) {
+      throw new Error('Clipboard API unavailable');
+    }
+    await navigator.clipboard.writeText(text);
+    status.textContent = 'Sesión copiada al portapapeles.';
+  } catch {
+    const manualCopy = document.createElement('textarea');
+    manualCopy.value = text;
+    manualCopy.setAttribute('readonly', '');
+    manualCopy.className = 'manual-copy-field';
+    document.body.append(manualCopy);
+    manualCopy.select();
+
+    const copied = document.execCommand('copy');
+    manualCopy.remove();
+    status.textContent = copied
+      ? 'Sesión copiada al portapapeles.'
+      : 'No se ha podido copiar automáticamente. Selecciona el texto de la vista previa y cópialo manualmente.';
+  }
+}
+
+function addSessionTask() {
+  readSessionForm();
+  const taskNumber = sessionDesignerState.tasks.filter((task) => task.label.startsWith('Tarea')).length + 1;
+  const closingTask = sessionDesignerState.tasks.at(-1);
+  sessionDesignerState.tasks.splice(-1, 1, createEmptyTask(`Tarea ${taskNumber}`), closingTask);
+  app.innerHTML = renderSessionDesigner();
+  bindInteractions();
+  bindSessionDesignerInteractions();
+}
+
+function clearSessionForm() {
+  sessionDesignerState = createEmptySessionState();
+  app.innerHTML = renderSessionDesigner();
+  bindInteractions();
+  bindSessionDesignerInteractions();
+}
+
+function bindSessionDesignerInteractions() {
+  const form = document.querySelector('#session-form');
+  if (!form) return;
+
+  form.addEventListener('input', refreshSessionPreview);
+  form.addEventListener('change', refreshSessionPreview);
+
+  document.querySelector('[data-add-task]')?.addEventListener('click', addSessionTask);
+  document.querySelector('[data-copy-session]')?.addEventListener('click', copySessionToClipboard);
+  document.querySelector('[data-clear-session]')?.addEventListener('click', clearSessionForm);
+}
+
 function renderResponsibleAi() {
   const suitableUses = [
     'Organizar ideas iniciales.',
@@ -470,6 +843,8 @@ function render() {
 
   if (route === 'repositorio') {
     app.innerHTML = renderRepository();
+  } else if (route === 'diseno-sesion') {
+    app.innerHTML = renderSessionDesigner();
   } else if (route === 'uso-repositorio') {
     app.innerHTML = renderRepositoryUse();
   } else if (route === 'guia-trabajo') {
@@ -483,6 +858,7 @@ function render() {
   }
 
   bindInteractions();
+  bindSessionDesignerInteractions();
   app.focus({ preventScroll: true });
 }
 
