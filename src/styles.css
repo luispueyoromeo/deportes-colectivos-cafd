@@ -960,3 +960,319 @@ textarea:focus {
     width: 100%;
   }
 }
+
+/* Observación de partido */
+.observation-page .page-intro {
+  max-width: 980px;
+}
+
+.observation-layout {
+  align-items: start;
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: minmax(0, 1.12fr) minmax(20rem, 0.88fr);
+}
+
+.observation-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.local-storage-warning {
+  background: #fff8e6;
+  border-color: rgba(216, 163, 28, 0.38);
+}
+
+.local-storage-warning h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.45rem;
+}
+
+.observation-section {
+  overflow: hidden;
+  padding: 0;
+}
+
+.observation-section summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 0.8rem;
+  justify-content: space-between;
+  list-style: none;
+  padding: clamp(1rem, 3vw, 1.2rem);
+}
+
+.observation-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.observation-section summary::after {
+  background: var(--green-100);
+  border-radius: 999px;
+  color: var(--green-900);
+  content: '+';
+  display: inline-grid;
+  flex: 0 0 2rem;
+  font-size: 1.25rem;
+  font-weight: 900;
+  height: 2rem;
+  place-items: center;
+  width: 2rem;
+}
+
+.observation-section[open] summary::after {
+  content: '−';
+}
+
+.observation-section summary span {
+  color: var(--green-900);
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.observation-section summary small,
+.observation-field small,
+.section-help,
+.checklist-help p {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.observation-section summary small {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.observation-section-body {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.2rem);
+}
+
+.observation-field span {
+  line-height: 1.25;
+}
+
+.observation-field input,
+.observation-field select,
+.observation-field textarea,
+.observation-table select {
+  font-size: 1rem;
+  min-height: 3rem;
+}
+
+.observation-textarea textarea {
+  min-height: 9rem;
+}
+
+.checklist-help {
+  background: #f3f8f5;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem;
+}
+
+.checklist-help p {
+  margin: 0;
+}
+
+.mobile-table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.observation-table {
+  border-collapse: collapse;
+  min-width: 620px;
+  width: 100%;
+}
+
+.observation-table th,
+.observation-table td {
+  border: 1px solid var(--line);
+  padding: 0.7rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.observation-table thead th,
+.observation-table tbody th {
+  background: #f3f8f5;
+  color: var(--green-900);
+  font-weight: 900;
+}
+
+.observation-table select {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  color: #263a32;
+  padding: 0.7rem 0.85rem;
+  width: 100%;
+}
+
+.self-assessment-table {
+  min-width: 520px;
+}
+
+.sticky-actions {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  bottom: 0.5rem;
+  padding: 0.75rem;
+  position: sticky;
+  z-index: 3;
+}
+
+.observation-preview-panel {
+  padding: 0;
+  position: sticky;
+  top: 6.5rem;
+}
+
+.observation-preview-panel .preview-heading {
+  padding: 1.1rem 1.1rem 0;
+}
+
+.observation-sheet {
+  overflow: hidden;
+}
+
+.observation-sheet header {
+  background: linear-gradient(135deg, var(--green-900), var(--blue));
+  color: #fff;
+  padding: 1.1rem;
+}
+
+.observation-sheet header span {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 850;
+  margin-bottom: 0.65rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.observation-sheet header h3 {
+  color: #fff;
+  margin-bottom: 0;
+}
+
+.observation-sheet section {
+  border-bottom: 1px solid var(--line);
+  padding: 1rem 1.1rem;
+}
+
+.observation-sheet section:last-child {
+  border-bottom: 0;
+}
+
+.observation-sheet h4 {
+  color: var(--green-900);
+  font-size: 1rem;
+  margin: 0 0 0.7rem;
+}
+
+.observation-sheet dl {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.observation-sheet dl div {
+  background: #f8fbf9;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 0.65rem;
+}
+
+.observation-sheet dt {
+  color: var(--green-700);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.observation-sheet dd {
+  color: #2b4138;
+  line-height: 1.5;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+  .observation-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .observation-preview-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 680px) {
+  .observation-section summary {
+    align-items: flex-start;
+  }
+
+  .mobile-table-wrap {
+    overflow: visible;
+  }
+
+  .observation-table,
+  .observation-table thead,
+  .observation-table tbody,
+  .observation-table tr,
+  .observation-table th,
+  .observation-table td {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .observation-table thead {
+    display: none;
+  }
+
+  .observation-table tr {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    margin-bottom: 0.8rem;
+    overflow: hidden;
+  }
+
+  .observation-table th,
+  .observation-table td {
+    border: 0;
+  }
+
+  .observation-table tbody th {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .observation-table td::before {
+    color: var(--green-700);
+    content: attr(data-label);
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+  }
+
+  .sticky-actions {
+    position: static;
+  }
+}
