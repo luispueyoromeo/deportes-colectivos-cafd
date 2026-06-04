@@ -10,9 +10,6 @@ const navItems = [
   { id: 'uso-repositorio', label: 'Uso del repositorio' },
   { id: 'guia-trabajo', label: 'Guía del trabajo' },
   { id: 'uso-ia', label: 'Uso responsable de IA' },
-  ...sports.map((sport) => ({ id: sport.slug, label: sport.name })),
-  { id: 'incorporacion', label: 'Cómo se incorporan' },
-  { id: 'calidad', label: 'Guía de calidad' },
 ];
 
 function sportName(slug) {
@@ -65,7 +62,7 @@ function renderHome() {
         </p>
         <div class="hero-actions">
           <button data-route="repositorio">Ver repositorio completo</button>
-          <button class="secondary" data-route="incorporacion">Conocer el procedimiento</button>
+          <button class="secondary" data-route="uso-repositorio">Cómo usar los filtros</button>
         </div>
       </div>
       <div class="stats-card" aria-label="Resumen del repositorio">
@@ -73,7 +70,7 @@ function renderHome() {
         <strong>${sports.length}</strong><span>deportes colectivos</span>
         <strong>${contentBlocks.length}</strong><span>bloques de contenido por deporte</span>
       </div>
-      <div class="sport-grid" aria-label="Accesos por deporte">
+      <div class="sport-grid" aria-label="Consulta por deporte desde el repositorio">
         ${sports
           .map(
             (sport) => `
@@ -81,7 +78,7 @@ function renderHome() {
                 <span class="sport-emoji" aria-hidden="true">${sport.emoji}</span>
                 <h2>${sport.name}</h2>
                 <p>${sport.summary}</p>
-                <button class="link-button" data-route="${sport.slug}">Entrar en ${sport.name}</button>
+                <button class="link-button" data-route="repositorio" data-sport-filter="${sport.slug}">Ver en el repositorio</button>
               </article>
             `,
           )
@@ -133,47 +130,6 @@ function selectFilter(label, key, options, display) {
           .join('')}
       </select>
     </label>
-  `;
-}
-
-function renderSportPage(sport) {
-  const sportResources = resources.filter((resource) => resource.sport === sport.slug);
-  const filteredSportResources = sportResources.filter(
-    (resource) => filters.academicYear === 'Todos' || resource.academicYear === filters.academicYear,
-  );
-
-  return `
-    <section class="page-section">
-      ${pageIntro(
-        'Página por deporte',
-        `${sport.emoji} ${sport.name}`,
-        `${sport.summary} Cada bloque muestra las tarjetas correspondientes a los recursos revisados e incorporados manualmente al repositorio.`,
-      )}
-      <div class="filters" aria-label="Filtros de ${sport.name}">
-        ${selectFilter(
-          'Curso académico',
-          'academicYear',
-          ['Todos', ...academicYearsFrom(sportResources)],
-          (value) => value,
-        )}
-      </div>
-      <div class="block-stack">
-        ${contentBlocks
-          .map((block) => {
-            const blockResources = filteredSportResources.filter((resource) => resource.block === block);
-            return `
-              <section class="content-block">
-                <div class="block-heading">
-                  <h2>${block}</h2>
-                  <span>${blockResources.length} recursos</span>
-                </div>
-                ${resourceGrid(blockResources, 'Todavía no hay recursos en este apartado.')}
-              </section>
-            `;
-          })
-          .join('')}
-      </div>
-    </section>
   `;
 }
 
@@ -485,45 +441,19 @@ function infoPanel(title, items, ordered = false) {
   `;
 }
 
-function renderQualityGuide() {
-  const criteria = [
-    'Claridad en la explicación.',
-    'Corrección conceptual.',
-    'Relación directa con la asignatura.',
-    'Utilidad para el aprendizaje práctico.',
-    'Buena organización visual.',
-    'Inclusión de ejemplos aplicados.',
-    'Uso adecuado de fuentes o referencias.',
-    'Originalidad y elaboración propia.',
-    'Uso ético y crítico de la inteligencia artificial, si procede.',
-  ];
-
-  return `
-    <section class="page-section two-column-page">
-      ${pageIntro(
-        'Orientación para el alumnado',
-        'Guía de calidad de los materiales',
-        'Estos criterios ayudan a elaborar recursos útiles para el aula invertida, conectados con la práctica y preparados para ser consultados por diferentes promociones del Grado en CAFD.',
-      )}
-      <div class="quality-list">
-        ${criteria
-          .map(
-            (criterion, index) => `
-              <article>
-                <span>${String(index + 1).padStart(2, '0')}</span>
-                <p>${criterion}</p>
-              </article>
-            `,
-          )
-          .join('')}
-      </div>
-    </section>
-  `;
-}
-
 function bindInteractions() {
   document.querySelectorAll('[data-route]').forEach((button) => {
-    button.addEventListener('click', () => setRoute(button.dataset.route));
+    button.addEventListener('click', () => {
+      if (button.dataset.sportFilter) {
+        filters = { ...filters, sport: button.dataset.sportFilter };
+      }
+
+      if (currentRoute() === button.dataset.route) {
+        render();
+      } else {
+        setRoute(button.dataset.route);
+      }
+    });
   });
 
   document.querySelectorAll('[data-filter]').forEach((select) => {
@@ -538,7 +468,6 @@ function render() {
   const route = currentRoute();
   updateNav(route);
 
-  const sport = sports.find((item) => item.slug === route);
   if (route === 'repositorio') {
     app.innerHTML = renderRepository();
   } else if (route === 'uso-repositorio') {
@@ -547,12 +476,8 @@ function render() {
     app.innerHTML = renderWorkGuide();
   } else if (route === 'uso-ia') {
     app.innerHTML = renderResponsibleAi();
-  } else if (sport) {
-    app.innerHTML = renderSportPage(sport);
   } else if (route === 'incorporacion') {
     app.innerHTML = renderIncorporation();
-  } else if (route === 'calidad') {
-    app.innerHTML = renderQualityGuide();
   } else {
     app.innerHTML = renderHome();
   }
