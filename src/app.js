@@ -1158,19 +1158,29 @@ function renderObservationPage() {
           `)}
           ${observationSection('4. Checklist conductual de agresiones hacia el árbitro', 'Registro rápido por agente y tipo de conducta.', renderChecklistEditor())}
           ${observationSection('5. Autoevaluación del árbitro', 'Preguntas cerradas al árbitro al finalizar el partido.', renderRefereeSelfAssessmentEditor())}
-          <div class="form-actions sticky-actions">
-            <button type="button" data-save-observation>Guardar borrador</button>
-            <button type="button" class="secondary" data-load-observation>Cargar borrador guardado</button>
-            <button type="button" class="secondary" data-delete-observation>Borrar borrador</button>
-            <button type="button" data-copy-observation>Copiar informe</button>
-            <button type="button" data-download-observation>Descargar informe en Word</button>
-            <div class="observation-submit-group">
-              <button type="button" data-submit-observation>Enviar registro observacional al profesor</button>
-              <div class="submission-scope-notice" role="note">
-                <strong>Solo se enviarán al profesorado</strong> los datos estructurados de la checklist conductual de agresiones hacia el árbitro, la autoevaluación del árbitro y los datos mínimos de identificación del alumnado y del partido. El resto de apartados narrativos no se envían mediante este botón; utilízalos para elaborar el trabajo final por la vía indicada en la asignatura.
+          <div class="form-actions sticky-actions observation-actions" aria-label="Acciones de observación de partido">
+            <div class="observation-action-row">
+              <div class="observation-action-group" aria-label="Acciones de trabajo">
+                <span class="observation-action-label">Trabajo</span>
+                <button type="button" data-save-observation>Guardar borrador</button>
+                <button type="button" class="secondary" data-load-observation>Cargar borrador</button>
+                <button type="button" class="secondary" data-delete-observation>Borrar borrador</button>
+              </div>
+              <div class="observation-action-group" aria-label="Acciones de informe">
+                <span class="observation-action-label">Informe</span>
+                <button type="button" data-copy-observation>Copiar informe</button>
+                <button type="button" data-download-observation>Descargar Word</button>
               </div>
             </div>
-            <button type="button" class="secondary" data-clear-observation>Limpiar formulario</button>
+            <div class="observation-action-row observation-action-row-secondary">
+              <div class="observation-submit-group">
+                <button type="button" data-submit-observation>Enviar registro observacional al profesor</button>
+                <div class="submission-scope-notice" role="note">
+                  <strong>Envío limitado:</strong> solo checklist conductual, autoevaluación del árbitro y datos mínimos de identificación y partido.
+                </div>
+              </div>
+              <button type="button" class="secondary observation-clear-button" data-clear-observation>Limpiar formulario</button>
+            </div>
           </div>
           <p id="observation-status" class="copy-status" role="status" aria-live="polite"></p>
         </form>
@@ -1193,17 +1203,46 @@ function observationReportSections(state) {
   const refereeRows = refereeQuestions.map(([key, question], index) => [`${index + 1}. ${question}`, state.refereeSelfAssessment[key]]);
   return [
     ['Datos del alumnado observador', [
-      ['Alumno/a 1', state.observers.student1], ['Alumno/a 2', state.observers.student2], ['Grupo de prácticas', state.observers.group], ['Curso académico', state.observers.academicYear], ['Correo de contacto', state.observers.email],
+      ['Nombre y apellidos del alumno/a 1', state.observers.student1],
+      ['Nombre y apellidos del alumno/a 2', state.observers.student2],
+      ['Grupo de prácticas', state.observers.group],
+      ['Curso académico', state.observers.academicYear],
+      ['Correo de contacto', state.observers.email],
     ]],
     ['Contextualización del partido', [
-      ['Deporte', state.matchContext.sport], ['Fecha', state.matchContext.date], ['Hora', state.matchContext.time], ['Lugar o instalación', state.matchContext.location], ['Equipo local', state.matchContext.homeTeam], ['Equipo visitante', state.matchContext.awayTeam], ['Género', state.matchContext.gender], ['Categoría', state.matchContext.category], ['Edad aproximada', state.matchContext.approximateAge], ['Nivel competitivo', state.matchContext.competitiveLevel], ['N.º aproximado de espectadores', state.matchContext.spectators], ['Resultado final', state.matchContext.finalScore], ['Enlace a foto demostrativa', state.matchContext.photoLink],
+      ['Deporte', state.matchContext.sport],
+      ['Fecha del partido', state.matchContext.date],
+      ['Hora del partido', state.matchContext.time],
+      ['Lugar o instalación', state.matchContext.location],
+      ['Equipo local', state.matchContext.homeTeam],
+      ['Equipo visitante', state.matchContext.awayTeam],
+      ['Género', state.matchContext.gender],
+      ['Categoría', state.matchContext.category],
+      ['Edad aproximada', state.matchContext.approximateAge],
+      ['Nivel competitivo', state.matchContext.competitiveLevel],
+      ['Número aproximado de espectadores', state.matchContext.spectators],
+      ['Resultado final', state.matchContext.finalScore],
+      ['Enlace a foto demostrativa', state.matchContext.photoLink],
     ]],
-    ['Resumen cualitativo', [['Resumen cualitativo del partido', state.qualitative.matchSummary]]],
-    ['Checklist conductual', [...checklistRows, ['Observaciones sobre jugadores', state.behavioralChecklist.players.observations], ['Observaciones sobre cuerpo técnico / entrenadores', state.behavioralChecklist.coachingStaff.observations], ['Observaciones sobre espectadores / padres', state.behavioralChecklist.spectators.observations]]],
-    ['Autoevaluación del árbitro', [...refereeRows, ['Comentarios adicionales del árbitro', state.refereeSelfAssessment.additionalComments]]],
-    ['Análisis cualitativo por agentes', [['Comportamiento de padres/espectadores', state.qualitative.spectatorBehavior], ['Comportamiento de jugadores/as', state.qualitative.playerBehavior], ['Comportamiento del entrenador/cuerpo técnico', state.qualitative.coachingBehavior]]],
-    ['Reflexión y conclusiones', [['Opinión/reflexión personal', state.qualitative.personalReflection], ['Conclusiones principales', state.qualitative.conclusions]]],
-    ['Propuestas de mejora', [['Propuestas de mejora o intervención educativa', state.qualitative.improvementProposals]]],
+    ['Registro cualitativo para el trabajo del alumno', [
+      ['Resumen cualitativo del partido', state.qualitative.matchSummary],
+      ['Comportamiento de padres/espectadores', state.qualitative.spectatorBehavior],
+      ['Comportamiento de jugadores/as', state.qualitative.playerBehavior],
+      ['Comportamiento del entrenador/cuerpo técnico', state.qualitative.coachingBehavior],
+      ['Opinión/reflexión personal', state.qualitative.personalReflection],
+      ['Conclusiones principales', state.qualitative.conclusions],
+      ['Propuestas de mejora o intervención educativa', state.qualitative.improvementProposals],
+    ]],
+    ['Checklist conductual de agresiones hacia el árbitro', [
+      ...checklistRows,
+      ['Observaciones sobre jugadores', state.behavioralChecklist.players.observations],
+      ['Observaciones sobre cuerpo técnico / entrenadores', state.behavioralChecklist.coachingStaff.observations],
+      ['Observaciones sobre espectadores / padres', state.behavioralChecklist.spectators.observations],
+    ], { alwaysIncludeRows: true }],
+    ['Autoevaluación del árbitro', [
+      ...refereeRows,
+      ['12. Comentarios adicionales del árbitro', state.refereeSelfAssessment.additionalComments],
+    ], { alwaysIncludeRows: true }],
   ];
 }
 
@@ -1212,8 +1251,8 @@ function observationReportHtml(state, includeFallback = false) {
   const sections = observationReportSections(state);
   return `
     <header><span>Deportes Colectivos CAFD</span><h3>Informe de observación de partido</h3></header>
-    ${sections.map(([title, rows], index) => {
-      const visibleRows = includeFallback ? rows : rows.filter(([, value]) => String(value ?? '').trim());
+    ${sections.map(([title, rows, options = {}], index) => {
+      const visibleRows = includeFallback || options.alwaysIncludeRows ? rows : rows.filter(([, value]) => String(value ?? '').trim());
       if (!visibleRows.length) return '';
       return `<section><h4>${index + 1}. ${title}</h4><dl>${visibleRows.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${nl2br(String(value || fallback))}</dd></div>`).join('')}</dl></section>`;
     }).join('')}
@@ -1222,10 +1261,10 @@ function observationReportHtml(state, includeFallback = false) {
 
 function observationReportText(state) {
   return ['Informe de observación de partido', 'Deportes Colectivos CAFD', '']
-    .concat(observationReportSections(state).flatMap(([title, rows], index) => {
-      const visibleRows = rows.filter(([, value]) => String(value ?? '').trim());
+    .concat(observationReportSections(state).flatMap(([title, rows, options = {}], index) => {
+      const visibleRows = options.alwaysIncludeRows ? rows : rows.filter(([, value]) => String(value ?? '').trim());
       if (!visibleRows.length) return [];
-      return [`${index + 1}. ${title}`, ...visibleRows.map(([label, value]) => `${label}: ${value}`), ''];
+      return [`${index + 1}. ${title}`, ...visibleRows.map(([label, value]) => `${label}: ${value ?? ''}`), ''];
     })).join('\n');
 }
 
@@ -1240,10 +1279,10 @@ function observationWordHtml(state) {
     th, td { border: 1pt solid #d9e4df; padding: 5pt; vertical-align: top; }
     th { background: #edf5f1; color: #123326; width: 32%; }
   </style></head><body><h1>Informe de observación de partido</h1><p class="subtitle">Deportes Colectivos CAFD</p>
-  ${observationReportSections(state).map(([title, rows], index) => {
-    const visibleRows = rows.filter(([, value]) => String(value ?? '').trim());
+  ${observationReportSections(state).map(([title, rows, options = {}], index) => {
+    const visibleRows = options.alwaysIncludeRows ? rows : rows.filter(([, value]) => String(value ?? '').trim());
     if (!visibleRows.length) return '';
-    return `<h2>${index + 1}. ${escapeHtml(title)}</h2><table>${visibleRows.map(([label, value]) => `<tr><th>${escapeHtml(label)}</th><td>${wordMultiline(String(value))}</td></tr>`).join('')}</table>`;
+    return `<h2>${index + 1}. ${escapeHtml(title)}</h2><table>${visibleRows.map(([label, value]) => `<tr><th>${escapeHtml(label)}</th><td>${wordMultiline(String(value ?? ''))}</td></tr>`).join('')}</table>`;
   }).join('')}<p>Documento editable generado desde la herramienta Observación de partido de Deportes Colectivos CAFD.</p></body></html>`;
 }
 
