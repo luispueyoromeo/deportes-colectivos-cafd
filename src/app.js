@@ -48,9 +48,7 @@ function createEmptySessionState(mainTaskLabels = initialMainTaskLabels) {
       specific: '',
       contents: '',
     },
-    warmupTasks: [createEmptyTask('Calentamiento 1')],
     tasks: mainTaskLabels.map((label) => createEmptyTask(label)),
-    closing: createEmptyTask('Vuelta a la calma o cierre reflexivo'),
     evaluation: {
       finalComment: '',
       improvements: '',
@@ -404,43 +402,16 @@ function renderSessionDesigner() {
 
           <section class="form-section">
             <div class="form-section-heading">
-              <h2>3. Estructura de la sesión</h2>
-            </div>
-            <div class="session-phase-heading">
               <div>
-                <p class="eyebrow">Calentamiento</p>
-                <h3>Tareas de calentamiento</h3>
+                <h2>3. Secuencia de tareas</h2>
+                <p class="section-help">Introduce las tareas de la sesión en el orden en que se desarrollarán. No es necesario clasificarlas en calentamiento, parte principal o vuelta a la calma; cada tarea debe aparecer de forma consecutiva según la lógica de la sesión.</p>
               </div>
-              <button class="secondary" type="button" data-add-warmup>Añadir calentamiento</button>
-            </div>
-            <div id="warmup-editors" class="task-editor-list">
-              ${sessionDesignerState.warmupTasks
-                .map((task, index) =>
-                  taskEditor(task, index, 'warmup', {
-                    canDelete: sessionDesignerState.warmupTasks.length > 1,
-                    deleteLabel: 'Eliminar calentamiento',
-                  }),
-                )
-                .join('')}
-            </div>
-            <div class="session-phase-heading">
-              <div>
-                <p class="eyebrow">Parte principal</p>
-                <h3>Tareas principales</h3>
-              </div>
-              <button class="secondary" type="button" data-add-task>Añadir tarea principal</button>
+              <button class="secondary" type="button" data-add-task>Añadir tarea</button>
             </div>
             <div id="task-editors" class="task-editor-list">
-              ${sessionDesignerState.tasks.map((task, index) => taskEditor(task, index)).join('')}
-            </div>
-            <div class="session-phase-heading single-heading">
-              <div>
-                <p class="eyebrow">Cierre</p>
-                <h3>Vuelta a la calma o cierre reflexivo</h3>
-              </div>
-            </div>
-            <div id="closing-editor" class="task-editor-list">
-              ${taskEditor(sessionDesignerState.closing, 0, 'closing')}
+              ${sessionDesignerState.tasks
+                .map((task, index) => taskEditor(task, index, 'task', { canDelete: index >= initialMainTaskLabels.length }))
+                .join('')}
             </div>
           </section>
 
@@ -492,9 +463,7 @@ function readSessionForm() {
     specific: data.get('objectives-specific') || '',
     contents: data.get('objectives-contents') || '',
   };
-  sessionDesignerState.warmupTasks = sessionDesignerState.warmupTasks.map((task, index) => readTaskFromForm(data, task, index, 'warmup'));
   sessionDesignerState.tasks = sessionDesignerState.tasks.map((task, index) => readTaskFromForm(data, task, index, 'task'));
-  sessionDesignerState.closing = readTaskFromForm(data, sessionDesignerState.closing, 0, 'closing');
   sessionDesignerState.evaluation = {
     finalComment: data.get('evaluation-finalComment') || '',
     improvements: data.get('evaluation-improvements') || '',
@@ -529,6 +498,7 @@ function sessionPreviewHtml(state) {
         <span>${escapeHtml(state.general.sport)}</span>
         <h3>${escapeHtml(filledValue(state.general.title, 'Título de la sesión'))}</h3>
       </header>
+      <h4>Datos generales</h4>
       <dl class="session-meta">
         <div><dt>Fecha</dt><dd>${escapeHtml(filledValue(state.general.date))}</dd></div>
         <div><dt>Número de sesión</dt><dd>${escapeHtml(filledValue(state.general.sessionNumber))}</dd></div>
@@ -548,24 +518,9 @@ function sessionPreviewHtml(state) {
         <p><strong>Contenidos técnico-tácticos:</strong> ${nl2br(state.objectives.contents)}</p>
       </section>
       <section>
-        <h4>Estructura de la sesión</h4>
-        <div class="session-phase-preview">
-          <h5>Calentamiento</h5>
-          <div class="session-task-list">
-            ${state.warmupTasks.map((task) => taskPreviewHtml(task)).join('')}
-          </div>
-        </div>
-        <div class="session-phase-preview">
-          <h5>Parte principal</h5>
-          <div class="session-task-list">
-            ${state.tasks.map((task) => taskPreviewHtml(task)).join('')}
-          </div>
-        </div>
-        <div class="session-phase-preview">
-          <h5>Vuelta a la calma o cierre reflexivo</h5>
-          <div class="session-task-list">
-            ${taskPreviewHtml(state.closing)}
-          </div>
+        <h4>Secuencia de tareas</h4>
+        <div class="session-task-list">
+          ${state.tasks.map((task) => taskPreviewHtml(task)).join('')}
         </div>
       </section>
       <section>
@@ -612,17 +567,10 @@ function sessionPlainText(state) {
     `Objetivos específicos: ${filledValue(state.objectives.specific)}`,
     `Contenidos técnico-tácticos trabajados: ${filledValue(state.objectives.contents)}`,
     '',
-    'ESTRUCTURA DE LA SESIÓN',
+    'SECUENCIA DE TAREAS',
   ];
 
-  lines.push('', 'CALENTAMIENTO');
-  state.warmupTasks.forEach((task) => addTaskPlainText(lines, task));
-
-  lines.push('', 'PARTE PRINCIPAL');
   state.tasks.forEach((task) => addTaskPlainText(lines, task));
-
-  lines.push('', 'VUELTA A LA CALMA O CIERRE REFLEXIVO');
-  addTaskPlainText(lines, state.closing);
 
   lines.push(
     '',
@@ -691,13 +639,7 @@ function compactWordCell(...values) {
     .join('<br />');
 }
 
-function taskNumber(phase, index) {
-  if (phase === 'warmup') return `C${index + 1}`;
-  if (phase === 'closing') return 'VC';
-  return String(index + 1);
-}
-
-function wordPhaseTable(title, tasks, phase) {
+function wordTaskTable(tasks) {
   const hasSketch = tasks.some((task) => String(task.sketch ?? '').trim());
   const sketchHeader = hasSketch ? '<th class="sketch-col">Esquema</th>' : '';
   const sketchCell = hasSketch ? '<td class="sketch-col">${sketch}</td>' : '';
@@ -708,7 +650,7 @@ function wordPhaseTable(title, tasks, phase) {
 
       return `
         <tr>
-          <td class="number-col">${taskNumber(phase, index)}</td>
+          <td class="number-col">${index + 1}</td>
           <td class="task-name-col">${wordText(task.name)}</td>
           <td>${compactWordCell(task.description, task.organization)}</td>
           <td>${wordMultiline(task.rules)}</td>
@@ -720,7 +662,6 @@ function wordPhaseTable(title, tasks, phase) {
     .join('');
 
   return `
-    <h3>${escapeHtml(title)}</h3>
     <table class="phase-table">
       <tr>
         <th class="number-col">Nº</th>
@@ -805,10 +746,8 @@ function sessionWordHtml(state) {
     <tr><th>Contenidos técnico-tácticos trabajados</th><td>${wordMultiline(state.objectives.contents)}</td></tr>
   </table>
 
-  <h2>3. Estructura de la sesión</h2>
-  ${wordPhaseTable('Calentamiento', state.warmupTasks, 'warmup')}
-  ${wordPhaseTable('Parte principal', state.tasks, 'main')}
-  ${wordPhaseTable('Vuelta a la calma o cierre reflexivo', [state.closing], 'closing')}
+  <h2>3. Secuencia de tareas</h2>
+  ${wordTaskTable(state.tasks)}
 
   <h2>4. Evaluación y observación</h2>
   <table class="section-table">
@@ -857,25 +796,12 @@ function rerenderSessionDesigner() {
   bindSessionDesignerInteractions();
 }
 
-function renumberWarmupTasks() {
-  sessionDesignerState.warmupTasks = sessionDesignerState.warmupTasks.map((task, index) => ({
-    ...task,
-    label: `Calentamiento ${index + 1}`,
-  }));
-}
-
-function addWarmupTask() {
+function deleteSessionTask(event) {
   readSessionForm();
-  sessionDesignerState.warmupTasks.push(createEmptyTask(`Calentamiento ${sessionDesignerState.warmupTasks.length + 1}`));
-  rerenderSessionDesigner();
-}
-
-function deleteWarmupTask(event) {
-  readSessionForm();
-  const index = Number(event.currentTarget.dataset.deleteWarmup);
-  if (Number.isNaN(index) || sessionDesignerState.warmupTasks.length <= 1) return;
-  sessionDesignerState.warmupTasks.splice(index, 1);
-  renumberWarmupTasks();
+  const index = Number(event.currentTarget.dataset.deleteTask);
+  if (Number.isNaN(index) || index < initialMainTaskLabels.length) return;
+  sessionDesignerState.tasks.splice(index, 1);
+  sessionDesignerState.tasks = sessionDesignerState.tasks.map((task, taskIndex) => ({ ...task, label: `Tarea ${taskIndex + 1}` }));
   rerenderSessionDesigner();
 }
 
@@ -898,9 +824,8 @@ function bindSessionDesignerInteractions() {
   form.addEventListener('input', refreshSessionPreview);
   form.addEventListener('change', refreshSessionPreview);
 
-  document.querySelector('[data-add-warmup]')?.addEventListener('click', addWarmupTask);
   document.querySelector('[data-add-task]')?.addEventListener('click', addSessionTask);
-  document.querySelectorAll('[data-delete-warmup]').forEach((button) => button.addEventListener('click', deleteWarmupTask));
+  document.querySelectorAll('[data-delete-task]').forEach((button) => button.addEventListener('click', deleteSessionTask));
   document.querySelector('[data-copy-session]')?.addEventListener('click', copySessionToClipboard);
   document.querySelector('[data-download-word]')?.addEventListener('click', downloadSessionWord);
   document.querySelector('[data-clear-session]')?.addEventListener('click', clearSessionForm);
