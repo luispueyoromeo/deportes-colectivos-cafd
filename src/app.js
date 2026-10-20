@@ -17,6 +17,11 @@ const navItems = [
   { id: 'repositorio', label: 'Repositorio' },
   { id: 'uso-repositorio', label: 'Uso del repositorio' },
   { id: 'observacion-partido', label: 'Observación de partido' },
+  {
+    id: 'autoevaluacion-arbitraje',
+    label: 'Autoevaluación arbitraje',
+    href: 'https://docs.google.com/forms/d/e/1FAIpQLSdY4s9effX20hgUCArgN51Tae1qGEfzjl5Y00Xw3TRBD5YZxQ/viewform?usp=header',
+  },
   { id: 'diseno-sesion', label: 'Diseño de sesión' },
   { id: 'uso-ia', label: 'Uso responsable de IA' },
 ];
@@ -96,7 +101,9 @@ function currentRoute() {
 function updateNav(route) {
   nav.innerHTML = navItems
     .map(
-      (item) => `
+      (item) => item.href ? `
+        <a href="${item.href}" target="_blank" rel="noopener noreferrer" aria-label="${item.label} (se abre en una pestaña nueva)">${item.label}</a>
+      ` : `
         <a href="#${item.id}" class="${route === item.id ? 'active' : ''}">${item.label}</a>
       `,
     )
