@@ -138,9 +138,9 @@ function renderHome() {
         </div>
       </div>
       <div class="stats-card" aria-label="Resumen del repositorio">
-        <strong>${resources.length}</strong><span>carpetas de Google Drive</span>
+        <strong>${resources.length}</strong><span>carpetas de materiales</span>
         <strong>${sports.length}</strong><span>deportes colectivos</span>
-        <strong>${contentBlocks.length}</strong><span>bloques de contenido por deporte</span>
+        <strong>${contentBlocks.length}</strong><span>bloques de contenido disponibles</span>
       </div>
       <div class="sport-grid" aria-label="Consulta por deporte desde el repositorio">
         ${sports
@@ -174,7 +174,7 @@ function renderRepository() {
       ${pageIntro(
         'Repositorio general',
         'Consulta todos los materiales disponibles',
-        'Filtra las carpetas recopilatorias por deporte, bloque de contenido y curso académico. Cada tarjeta enlaza a una carpeta de Google Drive preparada para reunir los materiales de aula invertida del alumnado.',
+        'Filtra las carpetas recopilatorias por deporte, bloque de contenido y curso académico. Cada tarjeta enlaza a una carpeta de materiales de aula invertida o de apoyo al trabajo del alumnado.',
       )}
       <div class="filters" aria-label="Filtros del repositorio">
         ${selectFilter('Deporte', 'sport', ['Todos', ...sports.map((sport) => sport.slug)], (value) =>
@@ -225,7 +225,7 @@ function resourceGrid(items, emptyText) {
                 <div><dt>Bloque</dt><dd>${resource.block}</dd></div>
                 <div><dt>Curso</dt><dd>${resource.academicYear}</dd></div>
               </dl>
-              <a class="drive-link" href="${resource.driveUrl}" target="_blank" rel="noopener noreferrer">Abrir carpeta en Google Drive</a>
+              <a class="drive-link" href="${resource.driveUrl}" target="_blank" rel="noopener noreferrer">${resource.linkLabel ?? 'Abrir carpeta en Google Drive'}</a>
             </article>
           `,
         )

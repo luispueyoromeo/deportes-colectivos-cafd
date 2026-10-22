@@ -25,9 +25,9 @@ export const sports = [
   },
 ];
 
-export const contentBlocks = ['Reglamento', 'Fundamentos técnicos', 'Fundamentos tácticos'];
+export const contentBlocks = ['Reglamento', 'Fundamentos técnicos', 'Fundamentos tácticos', 'Partidos competición'];
 
-// Biblioteca de carpetas de Google Drive organizada por deporte, bloque de contenido y curso académico.
+// Biblioteca de carpetas de materiales organizada por deporte, bloque de contenido y curso académico.
 // Sustituye ENLACE_EDITABLE por el identificador de carpeta correspondiente en cada recurso.
 export const resources = [
   {
@@ -89,6 +89,17 @@ export const resources = [
     description:
       'Carpeta recopilatoria con materiales de aula invertida elaborados por el alumnado sobre fundamentos tácticos de voleibol durante el curso académico 2026/2027.',
     driveUrl: 'https://drive.google.com/drive/folders/17PHTgqbvDN_qrxS0GeuXXjj8SEuiAL5j?usp=sharing',
+  },
+  {
+    id: 'voleibol-partidos-competicion-2026-2027',
+    title: 'Voleibol · Partidos competición · 2026/2027',
+    sport: 'voleibol',
+    block: 'Partidos competición',
+    academicYear: '2026/2027',
+    description:
+      'Partidos disputados en la competición de voleibol del curso 2026/2027 para su consulta y análisis por el alumnado.',
+    driveUrl: 'https://unizares-my.sharepoint.com/personal/372072_unizar_es/_layouts/15/onedrive.aspx?id=%2Fpersonal%2F372072%5Funizar%5Fes%2FDocuments%2Fpartidos%20de%20voleibol%2026%20de%20octubre%202026&ga=1',
+    linkLabel: 'Abrir carpeta de partidos',
   },
   {
     id: 'baloncesto-reglamento-2025-2026',
