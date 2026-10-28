@@ -98,7 +98,7 @@ export const resources = [
     academicYear: '2026/2027',
     description:
       'Partidos disputados en la competición de voleibol del curso 2026/2027 para su consulta y análisis por el alumnado.',
-    driveUrl: 'https://unizares-my.sharepoint.com/personal/372072_unizar_es/_layouts/15/onedrive.aspx?id=%2Fpersonal%2F372072%5Funizar%5Fes%2FDocuments%2Fpartidos%20de%20voleibol%2026%20de%20octubre%202026&ga=1',
+    driveUrl: 'https://unizares-my.sharepoint.com/:f:/g/personal/372072_unizar_es/IgAc6Iu8iGx_S7DvmufAJwNzAaHSJRyE6rj9lmFSWfYqHvk?e=pOZmIq',
     linkLabel: 'Abrir carpeta de partidos',
   },
   {
